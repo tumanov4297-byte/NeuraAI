@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<title>NeuraAI — ИИ-комплекс для бизнеса и маркетплейсов</title>
+<meta name="theme-color" content="#0E0C11" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="NeuraAI" />
+<link rel="manifest" href='data:application/manifest+json,{"name":"NeuraAI","short_name":"NeuraAI","display":"standalone","background_color":"%230E0C11","theme_color":"%230E0C11","start_url":"."}' />
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;450;500;600&display=swap');
+:root{
+  --bg:#0E0C11;--panel:#1A171C;--panel2:#211D24;--field:#0D0B10;--ivory:#EDE7DB;--soft:#9C958B;--faint:#6A645E;
+  --line:#2A272E;--line2:#39353F;--gold:#DBB87A;--gold-deep:#C9A461;--gold-soft:#988151;
+  --grad-gold:linear-gradient(180deg,#E8C98E,#CFA862);--err:#E9B6A6;--ok:#7FD0A8;--tg:#3CA7E6;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--ivory);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(130% 70% at 50% -15%,rgba(219,184,122,.13),transparent 58%);}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.04;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+.wrap{max-width:880px;margin:0 auto;padding:0 16px calc(104px + env(safe-area-inset-bottom));position:relative;z-index:1;}
+
+/* bottom app nav */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:25;display:flex;justify-content:center;gap:6px;
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:rgba(14,12,17,.86);
+  backdrop-filter:blur(16px);border-top:1px solid var(--line);}
+.tabbar-in{display:flex;gap:6px;width:100%;max-width:520px;}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;border-radius:14px;
+  border:1px solid transparent;background:transparent;color:var(--faint);cursor:pointer;font:inherit;transition:all .18s;}
+.tab svg{width:23px;height:23px;}
+.tab span{font-size:10px;letter-spacing:.01em;white-space:nowrap;}
+.tab:hover{color:var(--soft);}
+.tab.on{color:#16120A;background:var(--grad-gold);border-color:transparent;box-shadow:0 6px 18px rgba(207,168,98,.32);}
+.tab.on span{font-weight:600;}
+
+/* topbar */
+.topbar{position:sticky;top:0;z-index:20;backdrop-filter:blur(12px);background:rgba(14,12,17,.82);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top);}
+.tin{max-width:880px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:10px;}
+.brand{display:flex;align-items:center;gap:8px;font-family:'Fraunces',serif;font-weight:600;font-size:18px;letter-spacing:-.01em;cursor:pointer;}
+.brand .nub{width:9px;height:9px;border-radius:50%;background:var(--grad-gold);box-shadow:0 0 12px rgba(219,184,122,.7);}
+.brand i{font-style:normal;color:var(--gold);}
+.sp{flex:1;}
+.pill{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--soft);border:1px solid var(--line2);border-radius:9px;padding:6px 10px;}
+.pill b{color:var(--gold);font-family:'Fraunces',serif;}
+.linkbtn{background:none;border:none;color:var(--soft);font:inherit;font-size:13.5px;cursor:pointer;padding:6px 4px;}
+.linkbtn:hover{color:var(--ivory);}
+.avatar{width:34px;height:34px;border-radius:50%;border:1px solid var(--gold-soft);background:rgba(219,184,122,.1);color:var(--gold);font-family:'Fraunces',serif;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.iconbtn{width:34px;height:34px;border-radius:9px;border:1px solid var(--line2);background:transparent;color:var(--soft);cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.iconbtn:hover{color:var(--gold);border-color:var(--gold-soft);}
+
+/* hero */
+.hero{margin:30px 0 24px;}
+.rule-top{width:32px;height:1px;background:var(--gold);margin-bottom:16px;}
+.eyebrow{font-size:10.5px;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);font-weight:500;}
+.h1{font-family:'Fraunces',serif;font-weight:600;line-height:1.0;font-size:clamp(32px,8.5vw,52px);letter-spacing:-.015em;margin:12px 0 14px;}
+.h1 i{font-style:italic;color:var(--gold);font-weight:500;}
+.lede{color:var(--soft);font-size:15px;max-width:52ch;line-height:1.6;}
+
+/* category chips */
+.cats{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 16px;}
+.cat{border:1px solid var(--line2);background:var(--field);border-radius:20px;padding:8px 14px;font-size:13px;color:var(--soft);cursor:pointer;transition:all .15s;}
+.cat:hover{color:var(--ivory);border-color:var(--gold-soft);}
+.cat.on{border-color:var(--gold);color:#16120A;background:var(--grad-gold);font-weight:500;}
+
+/* tool grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:13px;}
+@media(min-width:640px){.grid{grid-template-columns:repeat(3,1fr);}}
+.tool{border:1px solid var(--line);border-radius:16px;padding:18px;background:linear-gradient(180deg,var(--panel),#151218);cursor:pointer;transition:transform .15s,border-color .15s;position:relative;overflow:hidden;}
+.tool:hover{transform:translateY(-3px);border-color:var(--gold-soft);}
+.tool .ico{width:42px;height:42px;border-radius:11px;background:rgba(219,184,122,.1);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;color:var(--gold);margin-bottom:12px;}
+.tool h3{font-family:'Fraunces',serif;font-size:17px;font-weight:600;margin:0 0 5px;letter-spacing:-.01em;}
+.tool p{color:var(--soft);font-size:12.5px;line-height:1.45;margin:0;}
+.tool .ct{position:absolute;top:14px;right:14px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);}
+
+/* generic panel/fields */
+.panel{background:linear-gradient(180deg,var(--panel),#161318);border:1px solid var(--line);border-radius:18px;padding:6px 18px 18px;}
+.fade{animation:in .45s cubic-bezier(.22,.7,.3,1) both;}
+@keyframes in{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+.back{display:inline-flex;align-items:center;gap:7px;color:var(--soft);font-size:13.5px;cursor:pointer;margin:22px 0 4px;background:none;border:none;}
+.back:hover{color:var(--gold);}
+.toolhead{display:flex;align-items:center;gap:14px;margin:10px 0 6px;}
+.toolhead .ico{width:46px;height:46px;border-radius:12px;background:rgba(219,184,122,.1);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;color:var(--gold);flex:none;}
+.toolhead h2{font-family:'Fraunces',serif;font-size:24px;font-weight:600;margin:0;letter-spacing:-.01em;}
+.toolhead p{color:var(--soft);font-size:13px;margin:3px 0 0;line-height:1.4;}
+.field{margin-top:18px;}
+.flabel{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;}
+.flabel b{font-weight:600;font-size:14px;}.flabel small{color:var(--faint);font-weight:400;font-size:12px;}
+.input,.area,select.input{width:100%;border:1px solid var(--line2);border-radius:12px;background:var(--field);padding:13px 15px;font-size:16px;font-family:inherit;color:var(--ivory);outline:none;transition:border-color .18s,box-shadow .18s;line-height:1.5;}
+.input::placeholder,.area::placeholder{color:var(--faint);}
+.area{resize:none;overflow:hidden;min-height:54px;display:block;}
+.input:focus,.area:focus,select.input:focus{border-color:var(--gold-soft);box-shadow:0 0 0 3px rgba(219,184,122,.13);}
+select.input option{background:#1A171B;}
+.seg{display:flex;flex-wrap:wrap;gap:9px;}
+.segbtn{border:1px solid var(--line2);background:rgba(255,255,255,.02);border-radius:12px;padding:12px 16px;font-size:14.5px;font-weight:500;cursor:pointer;color:var(--soft);transition:all .16s;font-family:inherit;-webkit-tap-highlight-color:transparent;}
+.segbtn:hover{border-color:var(--gold-soft);color:var(--ivory);}
+.segbtn:active{transform:scale(.97);}
+.segbtn.on{border-color:transparent;color:#241803;background:linear-gradient(165deg,#F2D49B,#D6AC64);box-shadow:0 6px 16px -5px rgba(207,168,98,.5),inset 0 1px 0 rgba(255,255,255,.5);font-weight:600;}
+.seg.num .segbtn{min-width:54px;text-align:center;}
+.drop{display:flex;align-items:center;gap:14px;border:1.5px dashed var(--line2);border-radius:13px;padding:16px;background:var(--field);cursor:pointer;}
+.drop:hover{border-color:var(--gold-soft);}
+.dropicon{width:46px;height:46px;border-radius:11px;background:rgba(219,184,122,.1);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:20px;flex:none;}
+.thumb{width:52px;height:52px;border-radius:11px;object-fit:cover;flex:none;border:1px solid var(--line2);}
+.droptext b{display:block;font-size:14px;}.droptext span{font-size:12.5px;color:var(--faint);}
+.xbtn{margin-left:auto;border:1px solid var(--line2);background:transparent;color:var(--gold-deep);font-size:12.5px;cursor:pointer;font-weight:600;padding:6px 11px;border-radius:9px;}
+
+.nav{display:flex;gap:11px;margin-top:24px;}
+.btn{border:none;border-radius:14px;font-weight:600;font-size:15.5px;cursor:pointer;font-family:'Fraunces',serif;letter-spacing:.01em;padding:16px 18px;transition:transform .08s ease,box-shadow .2s,filter .16s;position:relative;overflow:hidden;-webkit-tap-highlight-color:transparent;}
+.btn::after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);transform:translateX(-120%);transition:transform .6s ease;}
+.btn:hover::after{transform:translateX(120%);}
+.btn.gold{flex:1;background:linear-gradient(165deg,#F2D49B,#E0B66E 55%,#C99A52);color:#241803;box-shadow:0 10px 26px -6px rgba(207,168,98,.55),inset 0 1px 0 rgba(255,255,255,.5);}
+.btn.gold:active{transform:translateY(2px) scale(.99);box-shadow:0 5px 14px -6px rgba(207,168,98,.5),inset 0 1px 0 rgba(255,255,255,.4);}
+.btn.ghost{border:1px solid var(--line2);background:rgba(255,255,255,.02);color:var(--ivory);flex:none;padding:16px 20px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04);}
+.btn.ghost::after{display:none;}
+.btn.ghost:hover{border-color:var(--gold-soft);color:var(--gold);}
+.btn.ghost:active{transform:translateY(2px) scale(.99);}
+.btn.tg{flex:1;background:linear-gradient(165deg,#54B6F0,#2F9BE0 60%,#1E86CC);color:#03283f;box-shadow:0 10px 26px -6px rgba(47,155,224,.55),inset 0 1px 0 rgba(255,255,255,.45);}
+.btn.tg:active{transform:translateY(2px) scale(.99);}
+.btn.full{width:100%;}
+.note{margin-top:14px;border-radius:11px;padding:11px 14px;font-size:13.5px;line-height:1.5;}
+.note.err{border:1px solid #5A3A33;background:rgba(120,60,48,.16);color:var(--err);}
+.note.ok{border:1px solid #2F5A47;background:rgba(48,120,90,.15);color:var(--ok);}
+
+.load{text-align:center;padding:54px 14px;}
+.spin{width:44px;height:44px;margin:0 auto 22px;border-radius:50%;border:2px solid var(--line2);border-top-color:var(--gold);animation:rot 1s cubic-bezier(.5,.1,.4,.9) infinite;}
+@keyframes rot{to{transform:rotate(360deg);}}
+.load-t{font-family:'Fraunces',serif;font-style:italic;font-size:17px;color:var(--soft);}
+
+/* text result */
+.result{border:1px solid var(--line2);border-radius:16px;padding:20px;background:linear-gradient(160deg,#201C18,#15131A);margin-top:18px;}
+.result .rh{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.result .rh .eyebrow{flex:1;color:var(--gold);}
+.result p{margin:0 0 9px;font-size:15px;line-height:1.6;}
+.result b{color:#fff;}
+.result ul{margin:4px 0 12px;padding-left:20px;}
+.result li{font-size:15px;line-height:1.55;margin-bottom:5px;}
+.smallbtn{border:1px solid var(--line2);background:rgba(255,255,255,.02);color:var(--soft);border-radius:10px;padding:8px 12px;font-size:12.5px;cursor:pointer;font-family:inherit;transition:all .15s;-webkit-tap-highlight-color:transparent;}
+.smallbtn:hover{color:var(--gold);border-color:var(--gold-soft);}
+.smallbtn:active{transform:scale(.95);}
+
+/* cards result */
+.concept{border:1px solid var(--line2);border-radius:18px;padding:22px 20px;margin-bottom:6px;background:linear-gradient(160deg,#231E18,#16131A);}
+.concept .eyebrow{color:var(--gold);}.concept p{margin:12px 0 0;font-family:'Fraunces',serif;font-size:19px;line-height:1.45;}
+.sectionlabel{display:flex;align-items:center;gap:12px;margin:30px 2px 14px;}
+.sectionlabel h2{font-family:'Fraunces',serif;font-size:21px;font-weight:600;letter-spacing:-.01em;margin:0;}
+.srule{flex:1;height:1px;background:var(--line);}
+.idea{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--line);}
+.idea:last-child{border-bottom:none;}
+.idea .n{font-family:'Fraunces',serif;font-size:15px;font-weight:600;color:var(--gold);flex:none;width:26px;}
+.idea .role{font-weight:600;font-size:15px;}.idea .msg{color:var(--soft);font-size:13.5px;margin-top:3px;line-height:1.45;}
+.slide{background:linear-gradient(180deg,var(--panel),#151218);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px;}
+.slide-top{display:flex;gap:18px;align-items:flex-start;}
+@media(max-width:540px){.slide-top{flex-direction:column;align-items:stretch;}}
+.frame{width:158px;flex:none;aspect-ratio:3/4;border-radius:11px;overflow:hidden;background:#0E0C10;position:relative;display:flex;flex-direction:column;border:1px solid var(--line2);}
+@media(max-width:540px){.frame{width:100%;max-width:240px;margin:0 auto;}}
+.corner{position:absolute;width:14px;height:14px;border:1px solid var(--gold-soft);z-index:3;}
+.corner.c1{top:7px;left:7px;border-right:none;border-bottom:none;}.corner.c2{top:7px;right:7px;border-left:none;border-bottom:none;}
+.corner.c3{bottom:7px;left:7px;border-right:none;border-top:none;}.corner.c4{bottom:7px;right:7px;border-left:none;border-top:none;}
+.frame .bg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(80% 60% at 50% 35%,#221C26,#120F16);color:var(--faint);font-size:9px;text-transform:uppercase;letter-spacing:.18em;}
+.band{position:relative;z-index:2;padding:9px;display:flex;flex-direction:column;gap:5px;}
+.band.top{justify-content:flex-start;}.band.mid{flex:1;justify-content:center;}.band.bot{justify-content:flex-end;}
+.zone{background:rgba(237,231,219,.07);border:1px solid var(--line2);border-radius:6px;padding:5px 7px;font-size:9.5px;line-height:1.3;color:var(--ivory);}
+.zone.accent{border-color:var(--gold-soft);color:var(--gold);background:rgba(219,184,122,.1);}
+.slide-body{flex:1;min-width:0;}
+.slide-h{display:flex;align-items:baseline;gap:11px;}
+.slide-h .nn{font-family:'Fraunces',serif;color:var(--gold);font-weight:600;font-size:17px;}
+.slide-h .role{font-family:'Fraunces',serif;font-weight:600;font-size:19px;letter-spacing:-.01em;}
+.goal{color:var(--soft);font-size:13px;line-height:1.45;margin-top:4px;}
+.headline{font-family:'Fraunces',serif;font-style:italic;font-weight:500;font-size:20px;line-height:1.2;margin:11px 0 3px;}
+.sub{color:var(--soft);font-size:12.5px;line-height:1.45;}
+.metarow{margin-top:13px;}.mlabel{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--faint);margin-bottom:6px;}
+.mtext{font-size:13.5px;line-height:1.5;}
+.chips{display:flex;flex-wrap:wrap;gap:7px;}.chip{background:rgba(237,231,219,.06);border:1px solid var(--line2);border-radius:7px;padding:5px 10px;font-size:12.5px;}
+.chip.acc{background:rgba(219,184,122,.1);border-color:var(--gold-soft);color:var(--gold);}
+.pal{display:flex;flex-wrap:wrap;gap:10px;}.sw{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--soft);}
+.swdot{width:18px;height:18px;border-radius:6px;border:1px solid rgba(255,255,255,.16);flex:none;}
+
+/* cabinet */
+.cab-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px;}
+.stat{border:1px solid var(--line2);border-radius:14px;padding:16px;background:var(--field);}
+.stat .num{font-family:'Fraunces',serif;font-size:28px;font-weight:600;color:var(--gold);}
+.stat .cap{font-size:12px;color:var(--soft);margin-top:2px;}
+.htable{width:100%;border-collapse:collapse;margin-top:4px;font-size:13px;}
+.htable th{text-align:left;color:var(--faint);font-weight:500;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:8px 6px;border-bottom:1px solid var(--line);}
+.htable td{padding:9px 6px;border-bottom:1px solid var(--line);color:var(--ivory);}
+
+/* chat */
+.chat{padding-top:14px;padding-bottom:120px;}
+.newchat{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);background:rgba(255,255,255,.02);color:var(--soft);border-radius:20px;padding:8px 14px;font-size:13px;cursor:pointer;margin:6px 0 16px;font-family:inherit;}
+.newchat:hover{color:var(--gold);border-color:var(--gold-soft);}
+.msgs{display:flex;flex-direction:column;gap:16px;}
+.msg{display:flex;gap:10px;}
+.msg.u{flex-direction:row-reverse;}
+.msg .ava{width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:600;font-size:13px;}
+.msg.a .ava{background:rgba(219,184,122,.12);border:1px solid var(--line2);color:var(--gold);}
+.msg.u .ava{background:var(--grad-gold);color:#241803;}
+.bubble{padding:13px 16px;border-radius:16px;font-size:15px;line-height:1.58;max-width:80%;}
+.msg.a .bubble{background:linear-gradient(180deg,var(--panel),#161318);border:1px solid var(--line);border-top-left-radius:5px;}
+.msg.u .bubble{background:linear-gradient(165deg,#36303a,#28232f);border:1px solid var(--line2);border-top-right-radius:5px;color:var(--ivory);}
+.bubble p{margin:0 0 8px;}.bubble p:last-child{margin:0;}.bubble ul{margin:5px 0;padding-left:18px;}.bubble li{margin-bottom:4px;}.bubble b{color:#fff;}
+.dots{display:inline-flex;gap:5px;padding:3px 0;}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--gold);animation:blink 1.1s infinite;}
+.dots i:nth-child(2){animation-delay:.18s;}.dots i:nth-child(3){animation-delay:.36s;}
+@keyframes blink{0%,65%,100%{opacity:.25;transform:translateY(0);}32%{opacity:1;transform:translateY(-2px);}}
+.empty{text-align:center;padding:36px 10px 10px;}
+.empty .big{font-family:'Fraunces',serif;font-size:30px;color:var(--ivory);margin-bottom:8px;letter-spacing:-.01em;}
+.empty .sub{color:var(--soft);font-size:14px;line-height:1.5;max-width:36ch;margin:0 auto;}
+.suggests{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-top:22px;}
+.sug{border:1px solid var(--line2);background:rgba(255,255,255,.02);border-radius:14px;padding:11px 15px;font-size:13px;color:var(--soft);cursor:pointer;transition:all .15s;text-align:left;max-width:230px;}
+.sug:hover{border-color:var(--gold-soft);color:var(--ivory);}
+.composer{position:fixed;left:0;right:0;bottom:calc(70px + env(safe-area-inset-bottom));z-index:24;padding:0 16px;}
+.composer-in{max-width:880px;margin:0 auto;display:flex;align-items:flex-end;gap:9px;background:rgba(22,19,25,.94);backdrop-filter:blur(16px);border:1px solid var(--line2);border-radius:20px;padding:7px 7px 7px 16px;box-shadow:0 12px 34px -12px rgba(0,0,0,.7);}
+.composer-in:focus-within{border-color:var(--gold-soft);box-shadow:0 12px 34px -12px rgba(0,0,0,.7),0 0 0 3px rgba(219,184,122,.12);}
+.chat-input{flex:1;border:none;background:transparent;color:var(--ivory);font:inherit;font-size:16px;resize:none;outline:none;max-height:150px;line-height:1.45;padding:9px 0;}
+.chat-input::placeholder{color:var(--faint);}
+.sendbtn{width:44px;height:44px;flex:none;border:none;border-radius:14px;background:linear-gradient(165deg,#F2D49B,#D6AC64);color:#241803;font-size:21px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px -4px rgba(207,168,98,.55);transition:transform .08s,filter .15s;}
+.sendbtn:hover{filter:brightness(1.05);}
+.sendbtn:active{transform:scale(.9);}
+
+/* modal */
+.overlay{position:fixed;inset:0;z-index:40;background:rgba(8,7,9,.72);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;}
+@media(min-width:560px){.overlay{align-items:center;padding:16px;}}
+.modal{background:linear-gradient(180deg,var(--panel),#161318);border:1px solid var(--line2);border-radius:18px 18px 0 0;width:100%;max-width:440px;padding:22px 20px 26px;animation:up .3s ease both;max-height:90vh;overflow:auto;}
+@media(min-width:560px){.modal{border-radius:18px;}}
+@keyframes up{from{transform:translateY(20px);opacity:0;}to{transform:none;opacity:1;}}
+.modal h2{font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin:0 0 4px;}
+.modal .msub{color:var(--soft);font-size:13px;margin-bottom:14px;line-height:1.5;}
+.price{font-family:'Fraunces',serif;font-size:15px;color:var(--gold);margin:2px 0 14px;}
+.foot{text-align:center;color:var(--faint);font-size:11.5px;margin-top:30px;line-height:1.6;}
+@media(prefers-reduced-motion:reduce){.spin{animation:none;}.fade,.modal{animation:none;}.btn:active,.segbtn:active,.smallbtn:active{transform:none;}.btn::after{display:none;}.tool:hover{transform:none;}}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="tin" id="topbar"></div></div>
+<div class="wrap" id="app"></div>
+<div class="tabbar" id="tabbar"></div>
+<div id="modal-root"></div>
+
+<script>
+"use strict";
+/* ═══════════════════════════════════════════════════════════════════
+   НАСТРОЙКА (правьте под себя)
+   ─ telegram: ваш ник для оплаты
+   ─ apiKey/provider: для работы на своём хостинге впишите ключ ИИ
+   ─ codes: коды активации, которые вы выдаёте после оплаты в Telegram.
+            формат «КОД»: сколько_генераций_добавить
+   ВНИМАНИЕ: ключ в статическом сайте виден посетителям — годится для
+   личного/внутреннего использования. Для публичного сервиса нужен сервер.
+   ═══════════════════════════════════════════════════════════════════ */
+const CONFIG={
+  brand:"NeuraAI",
+  provider:"anthropic",            // anthropic | yandexgpt
+  apiKey:"",                        // ваш ключ для хостинга
+  anthropicModel:"claude-sonnet-4-6",
+  yandexFolderId:"",
+};
+const llm={provider:CONFIG.provider,apiKey:CONFIG.apiKey,model:CONFIG.anthropicModel,folderId:CONFIG.yandexFolderId};
+
+/* ── безопасное хранилище (localStorage + fallback в память) ── */
+const store=(()=>{let mem={},ok=true;try{localStorage.setItem("__t","1");localStorage.removeItem("__t");}catch(e){ok=false;}
+  return{get:(k)=>{try{return ok?localStorage.getItem(k):mem[k];}catch{return mem[k];}},
+         set:(k,v)=>{try{ok?localStorage.setItem(k,v):(mem[k]=v);}catch{mem[k]=v;}}};})();
+const load=(k,d)=>{try{const v=store.get(k);return v?JSON.parse(v):d;}catch{return d;}};
+const save=(k,v)=>store.set(k,JSON.stringify(v));
+
+/* ── иконки ── */
+const I={
+  grid:'<path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/>',
+  tag:'<path d="M3 12l9-9 9 9-9 9z"/><circle cx="9" cy="9" r="1.4"/>',
+  card:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18"/>',
+  doc:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/>',
+  chat:'<path d="M4 5h16v11H8l-4 4z"/>',
+  mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  pen:'<path d="M14 4l6 6L8 22H2v-6z"/>',
+  star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17.8 6.6 20l1-6.1L3.2 9.5l6.1-.9z"/>',
+  bulb:'<path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12c.7.7 1 1.4 1 2h6c0-.6.3-1.3 1-2A7 7 0 0 0 12 2z"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',
+  reply:'<path d="M9 7L4 12l5 5M4 12h11a5 5 0 0 1 5 5v1"/>',
+  home:'<path d="M4 11l8-7 8 7M6 10v9h5v-6h2v6h5v-9"/>',
+  user:'<circle cx="12" cy="8" r="3.5"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/>',
+};
+const svg=(n)=>`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${I[n]||I.grid}</svg>`;
+
+/* ── инструменты ── */
+const seg=(opts)=>({type:"seg",options:opts});
+const TOOLS=[
+ {id:"cards",cat:"Маркетплейсы",icon:"card",title:"Карточки для маркетплейсов",desc:"Концепция серии слайдов: идеи, тексты, композиция, инфографика.",render:"cards",
+  fields:[{key:"marketplace",label:"Маркетплейс",...seg(["Ozon","Wildberries","Яндекс Маркет","Универсально"])},
+          {key:"photo",label:"Фото товара",sm:"необязательно",type:"photo"},
+          {key:"name",label:"Название товара",type:"input",ph:"Напр. Беспроводные наушники Aura Pro"},
+          {key:"characteristics",label:"Характеристики",type:"area",ph:"Размер, материал, мощность, комплектация…"},
+          {key:"advantages",label:"Преимущества",type:"area",ph:"Чем лучше конкурентов, выгоды…"},
+          {key:"audience",label:"Целевая аудитория",type:"area",ph:"Напр. молодёжь 18–30…"},
+          {key:"brandStyle",label:"Стиль бренда",type:"input",ph:"Минимализм / премиум / яркий…"},
+          {key:"count",label:"Слайдов",...seg([4,5,6,7,8]),def:5}],
+  build:(f)=>buildBrief(f)},
+ {id:"desc",cat:"Маркетплейсы",icon:"tag",title:"SEO-описание товара",desc:"Продающее описание с ключами и структурой под маркетплейс.",render:"text",
+  fields:[{key:"name",label:"Товар",type:"input",ph:"Название товара"},
+          {key:"features",label:"Характеристики и преимущества",type:"area",ph:"Что важно подчеркнуть…"},
+          {key:"keywords",label:"Ключевые слова",sm:"необязательно",type:"input",ph:"через запятую"}],
+  build:(f)=>`Ты — копирайтер маркетплейсов. Напиши продающее SEO-описание товара «${f.name}». Характеристики/преимущества: ${f.features}. Ключевые слова: ${f.keywords||"—"}. Структура: цепляющий первый абзац, список преимуществ, блок характеристик, мягкий призыв к покупке. Без воды, по-русски.`},
+ {id:"reviews",cat:"Поддержка",icon:"reply",title:"Ответы на отзывы",desc:"Вежливые ответы покупателям, в т.ч. на негатив.",render:"text",
+  fields:[{key:"review",label:"Текст отзыва",type:"area",ph:"Вставьте отзыв покупателя…"},
+          {key:"product",label:"Товар",sm:"необязательно",type:"input",ph:"О каком товаре"},
+          {key:"tone",label:"Тон",...seg(["Тёплый","Официальный","Дружелюбный"])}],
+  build:(f)=>`Ты — менеджер по работе с клиентами. Напиши ответ на отзыв покупателя. Отзыв: «${f.review}». Товар: ${f.product||"—"}. Тон: ${f.tone}. Если отзыв негативный — мягко извинись и предложи решение, если положительный — поблагодари. Кратко и по-человечески, по-русски.`},
+ {id:"smm",cat:"Маркетинг",icon:"chat",title:"Посты для соцсетей",desc:"Готовый пост под площадку с хэштегами.",render:"text",
+  fields:[{key:"topic",label:"Тема поста",type:"area",ph:"О чём пост, что продвигаем…"},
+          {key:"platform",label:"Площадка",...seg(["Telegram","VK","Instagram","Дзен"])},
+          {key:"goal",label:"Цель",...seg(["Продажа","Вовлечение","Анонс","Прогрев"])}],
+  build:(f)=>`Напиши пост для «${f.platform}» на тему: ${f.topic}. Цель: ${f.goal}. Уместные эмодзи и хэштеги в меру. Структура: крючок, основная часть, призыв. По-русски.`},
+ {id:"email",cat:"Маркетинг",icon:"mail",title:"Письма и рассылки",desc:"Тема и тело письма под вашу цель.",render:"text",
+  fields:[{key:"goal",label:"Цель письма",type:"input",ph:"Напр. анонс распродажи"},
+          {key:"audience",label:"Кому пишем",type:"input",ph:"Сегмент аудитории"},
+          {key:"points",label:"Тезисы",type:"area",ph:"Что обязательно сказать…"}],
+  build:(f)=>`Напиши письмо для email-рассылки. Цель: ${f.goal}. Аудитория: ${f.audience}. Тезисы: ${f.points}. Дай строку «Тема:» и затем тело письма. По-русски, без канцелярита.`},
+ {id:"headlines",cat:"Маркетинг",icon:"star",title:"Заголовки и слоганы",desc:"Цепляющие варианты на выбор.",render:"text",
+  fields:[{key:"product",label:"Продукт / оффер",type:"area",ph:"Что рекламируем…"},
+          {key:"style",label:"Стиль",...seg(["Деловой","Дерзкий","Эмоциональный","Лаконичный"])},
+          {key:"count",label:"Сколько",...seg([5,8,10]),def:8}],
+  build:(f)=>`Придумай ${f.count} вариантов цепляющих заголовков/слоганов для: ${f.product}. Стиль: ${f.style}. Пронумеруй список. По-русски.`},
+ {id:"rewrite",cat:"Тексты",icon:"pen",title:"Рерайт и редактура",desc:"Переписать, упростить или исправить текст.",render:"text",
+  fields:[{key:"text",label:"Исходный текст",type:"area",ph:"Вставьте текст…"},
+          {key:"mode",label:"Режим",...seg(["Исправить ошибки","Упростить","Сделать живее","Официальный тон"])}],
+  build:(f)=>`Перепиши текст в режиме «${f.mode}», сохранив смысл. Текст: «${f.text}». Верни только результат, по-русски.`},
+ {id:"translate",cat:"Тексты",icon:"globe",title:"Перевод",desc:"Аккуратный перевод на нужный язык.",render:"text",
+  fields:[{key:"text",label:"Текст",type:"area",ph:"Что перевести…"},
+          {key:"lang",label:"Язык перевода",type:"select",options:["Английский","Немецкий","Китайский","Турецкий","Испанский","Русский"]}],
+  build:(f)=>`Переведи текст на ${f.lang}. Текст: «${f.text}». Верни только перевод.`},
+ {id:"ideas",cat:"Идеи",icon:"bulb",title:"Брейншторм идей",desc:"Идеи и решения по любой задаче.",render:"text",
+  fields:[{key:"task",label:"Задача",type:"area",ph:"Опишите, для чего нужны идеи…"},
+          {key:"count",label:"Сколько идей",...seg([5,8,12]),def:8}],
+  build:(f)=>`Сгенерируй ${f.count} креативных идей по задаче: ${f.task}. Кратко поясни каждую. По-русски, нумерованным списком.`},
+];
+const TOOL=(id)=>TOOLS.find((t)=>t.id===id);
+const CATS=["Все",...Array.from(new Set(TOOLS.map((t)=>t.cat)))];
+
+const LOAD_STEPS=["Анализирую запрос…","Подбираю формулировки…","Прорабатываю детали…","Собираю результат…"];
+
+/* ── состояние ── */
+const state={
+  view:"chat", cat:"Все", toolId:null, sub:"form",
+  form:{}, photo:null, error:"", result:null, resultText:"", modal:null,
+  chats:[], currentId:null, typing:false, _rev:null,
+  profile:load("neura_profile",null),
+};
+/* инициализация чатов (с переносом старого одиночного чата) */
+(function initChats(){
+  state.chats=load("neura_chats",[]);
+  state.currentId=load("neura_current",null);
+  if(!state.chats.length){
+    const old=load("neura_chat",[]);
+    if(old&&old.length){const id=newId();state.chats=[{id,title:titleFrom(old),messages:old,updated:Date.now()}];state.currentId=id;}
+  }
+})();
+
+/* ── helpers ── */
+const $=(id)=>document.getElementById(id);
+const esc=(s)=>String(s==null?"":s).replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const isHex=(v)=>/^#?[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(String(v).trim());
+const hexOf=(v)=>{const t=String(v).trim();return t.startsWith("#")?t:"#"+t;};
+function grow(el){el.style.height="auto";el.style.height=el.scrollHeight+"px";}
+function scrollTop(){window.scrollTo({top:0,behavior:"smooth"});}
+function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function titleFrom(msgs){const u=(msgs||[]).find((m)=>m.role==="user");const t=u?u.content.trim().replace(/\s+/g," "):"Новый чат";return t.length>42?t.slice(0,42)+"…":t||"Новый чат";}
+function saveChats(){save("neura_chats",state.chats);save("neura_current",state.currentId);}
+function currentChat(){return state.chats.find((c)=>c.id===state.currentId)||null;}
+function ensureChat(){let c=currentChat();if(!c){c={id:newId(),title:"Новый чат",messages:[],updated:Date.now()};state.chats.unshift(c);state.currentId=c.id;saveChats();}return c;}
+function newChat(){clearInterval(state._rev);const c={id:newId(),title:"Новый чат",messages:[],updated:Date.now()};state.chats.unshift(c);state.currentId=c.id;state.typing=false;saveChats();}
+function firstName(){const p=state.profile;if(!p||!p.name)return "";return p.name.trim().split(/\s+/)[0];}
+
+/* ── brief для карточек ── */
+function buildBrief(f){
+  return ["Ты — арт-директор и стратег по карточкам товара для российских маркетплейсов.",
+    "Придумай концепцию серии карточек (слайдов карусели) и подробно опиши визуальную концепцию каждого слайда.","",
+    "Маркетплейс: "+f.marketplace,"Данные:",
+    "- Название: "+(f.name||"—"),"- Характеристики: "+(f.characteristics||"—"),"- Преимущества: "+(f.advantages||"—"),
+    "- Аудитория: "+(f.audience||"—"),"- Стиль бренда: "+(f.brandStyle||"—"),
+    state.photo?"- Фото товара приложено, учитывай его.":"","",
+    "Сделай ровно "+(f.count||5)+" слайдов. Формат 3:4, читается на мобильном.","",
+    "Верни СТРОГО валидный JSON без markdown и пояснений:",
+    '{"concept":"общая идея","slides":[{"n":1,"role":"роль","goal":"зачем","message":"смысл","headline":"крупный текст","subtexts":["подписи"],"accents":["акценты"],"style":"стиль","palette":["#HEX"],"infographic":["иконки"],"layout":[{"area":"фон|верх|центр|низ","element":"что"}]}]}',
+    "По-русски, кратко. В layout 3–5 зон."].filter(Boolean).join("\n");
+}
+function parseConcept(text){const c=String(text).replace(/```json/g,"").replace(/```/g,"").trim();const a=c.indexOf("{"),b=c.lastIndexOf("}");const p=JSON.parse(c.slice(a,b+1));if(!p.slides||!p.slides.length)throw new Error("Пустой результат");return p;}
+
+async function callLLM(prompt,withPhoto){
+  if(llm.provider==="yandexgpt"){
+    if(!llm.apiKey||!llm.folderId)throw new Error("Для YandexGPT задайте ключ и folderId (⚙). Из браузера возможен CORS — тогда нужен сервер.");
+    const r=await fetch("https://llm.api.cloud.yandex.net/foundationModels/v1/completion",{method:"POST",headers:{"content-type":"application/json",Authorization:"Api-Key "+llm.apiKey},body:JSON.stringify({modelUri:`gpt://${llm.folderId}/yandexgpt/latest`,completionOptions:{stream:false,temperature:0.6,maxTokens:4000},messages:[{role:"user",text:prompt}]})});
+    if(!r.ok)throw new Error("YandexGPT: "+r.status);const d=await r.json();return d.result.alternatives[0].message.text;
+  }
+  const headers={"content-type":"application/json","anthropic-version":"2023-06-01"};
+  if(llm.apiKey){headers["x-api-key"]=llm.apiKey;headers["anthropic-dangerous-direct-browser-access"]="true";}
+  let content;
+  if(withPhoto&&state.photo&&state.photo.b64)content=[{type:"image",source:{type:"base64",media_type:state.photo.mime,data:state.photo.b64}},{type:"text",text:prompt}];
+  else content=prompt;
+  const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers,body:JSON.stringify({model:llm.model||"claude-sonnet-4-6",max_tokens:4000,messages:[{role:"user",content}]})});
+  if(!r.ok){if(r.status===401||r.status===403)throw new Error("Нет доступа к ИИ. На своём хостинге впишите API-ключ в настройках (⚙) или в блоке CONFIG.");throw new Error("Ошибка ИИ: "+r.status);}
+  const d=await r.json();return (d.content||[]).map((x)=>x.text||"").join("\n");
+}
+const SYSTEM="Ты — NeuraAI, умный русскоязычный ассистент для бизнеса, маркетплейсов и контента. Отвечай ясно, по делу, дружелюбно и профессионально. Помогай с карточками товара, описаниями, текстами, маркетингом, идеями и любыми вопросами. Используй абзацы и списки, когда это уместно. Ты — NeuraAI и не обсуждаешь, на какой технологии работаешь.";
+const SUGGESTS=["Напиши продающее описание для термокружки","Идеи постов для магазина косметики","Вежливо ответь на негативный отзыв","С чего начать продажи на Wildberries?"];
+async function chatLLM(history){
+  if(llm.provider==="yandexgpt"){
+    if(!llm.apiKey||!llm.folderId)throw new Error("Для YandexGPT задайте ключ и folderId (⚙).");
+    const messages=[{role:"system",text:SYSTEM}].concat(history.map((m)=>({role:m.role,text:m.content})));
+    const r=await fetch("https://llm.api.cloud.yandex.net/foundationModels/v1/completion",{method:"POST",headers:{"content-type":"application/json",Authorization:"Api-Key "+llm.apiKey},body:JSON.stringify({modelUri:`gpt://${llm.folderId}/yandexgpt/latest`,completionOptions:{stream:false,temperature:0.7,maxTokens:1500},messages})});
+    if(!r.ok)throw new Error("YandexGPT: "+r.status);const d=await r.json();return d.result.alternatives[0].message.text;
+  }
+  const headers={"content-type":"application/json","anthropic-version":"2023-06-01"};
+  if(llm.apiKey){headers["x-api-key"]=llm.apiKey;headers["anthropic-dangerous-direct-browser-access"]="true";}
+  const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers,body:JSON.stringify({model:llm.model||"claude-sonnet-4-6",max_tokens:1500,system:SYSTEM,messages:history.map((m)=>({role:m.role,content:m.content}))})});
+  if(!r.ok){if(r.status===401||r.status===403)throw new Error("Нет доступа к ИИ. На своём хостинге впишите API-ключ (⚙ или CONFIG).");throw new Error("Ошибка ИИ: "+r.status);}
+  const d=await r.json();return (d.content||[]).map((x)=>x.text||"").join("\n");
+}
+function scrollChat(){requestAnimationFrame(()=>window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"}));}
+function grow2(el){el.style.height="auto";el.style.height=Math.min(el.scrollHeight,150)+"px";}
+function revealInto(full){
+  const c=currentChat();if(!c)return;const idx=c.messages.length-1;const el=$("liveMsg");
+  if(!el){c.messages[idx].content=full;saveChats();return;}
+  const total=full.length;let i=0;const dur=Math.min(1200,Math.max(300,total*5));const step=Math.max(2,Math.ceil(total/(dur/16)));
+  clearInterval(state._rev);
+  state._rev=setInterval(()=>{i+=step;c.messages[idx].content=full.slice(0,i);el.innerHTML=mdLite(c.messages[idx].content);scrollChat();
+    if(i>=total){clearInterval(state._rev);c.messages[idx].content=full;el.innerHTML=mdLite(full);c.updated=Date.now();saveChats();}},16);
+}
+async function sendChat(text){
+  text=(text||"").trim();if(!text)return;
+  const c=ensureChat();
+  c.messages.push({role:"user",content:text});
+  if(c.title==="Новый чат")c.title=titleFrom(c.messages);
+  c.updated=Date.now();state.typing=true;saveChats();render();
+  try{
+    const reply=await chatLLM(c.messages);
+    state.typing=false;c.messages.push({role:"assistant",content:""});saveChats();render();revealInto(reply);
+  }catch(e){state.typing=false;c.messages.push({role:"assistant",content:"⚠ "+(e.message||"Не удалось получить ответ")});saveChats();render();}
+}
+function msgHTML(m,isLast){
+  const cls=m.role==="user"?"u":"a";const ava=m.role==="user"?(firstName()?esc(firstName()[0].toUpperCase()):"Я"):"N";
+  const inner=m.role==="user"?esc(m.content).replace(/\n/g,"<br>"):`<span ${isLast?'id="liveMsg"':""}>${mdLite(m.content)}</span>`;
+  return `<div class="msg ${cls}"><div class="ava">${ava}</div><div class="bubble">${inner}</div></div>`;
+}
+function composer(){return `<div class="composer"><div class="composer-in"><textarea id="chatInput" class="chat-input" rows="1" placeholder="Спросите NeuraAI…"></textarea><button class="sendbtn" data-action="send-chat" title="Отправить">↑</button></div></div>`;}
+function viewChat(){
+  const c=currentChat();const msgsArr=c?c.messages:[];const has=msgsArr.length>0;
+  const head=`<button class="newchat" data-action="new-chat">+ Новый чат</button>`;
+  const nm=firstName();
+  let body;
+  if(!has&&!state.typing){
+    body=`<div class="empty"><div class="big">${nm?"Чем помочь, "+esc(nm)+"?":"Чем помочь?"}</div><div class="sub">Спросите NeuraAI о товарах, текстах, маркетинге — о чём угодно.</div>
+      <div class="suggests">${SUGGESTS.map((s)=>`<button class="sug" data-action="suggest" data-val="${esc(s)}">${esc(s)}</button>`).join("")}</div></div>`;
+  }else{
+    const msgs=msgsArr.map((m,i)=>msgHTML(m,i===msgsArr.length-1)).join("");
+    const typing=state.typing?`<div class="msg a"><div class="ava">N</div><div class="bubble"><span class="dots"><i></i><i></i><i></i></span></div></div>`:"";
+    body=`<div class="msgs">${msgs}${typing}</div>`;
+  }
+  return `<div class="chat fade">${head}${body}</div>${composer()}`;
+}
+
+/* ── формат текста ── */
+function mdLite(t){
+  const lines=esc(t).split(/\r?\n/);let html="",inList=false;
+  const flush=()=>{if(inList){html+="</ul>";inList=false;}};
+  lines.forEach((line)=>{let l=line.trim().replace(/\*\*(.+?)\*\*/g,"<b>$1</b>");
+    if(/^[-•*]\s+/.test(l)){if(!inList){html+="<ul>";inList=true;}html+="<li>"+l.replace(/^[-•*]\s+/,"")+"</li>";}
+    else if(/^\d+[.)]\s+/.test(l)){if(!inList){html+="<ul>";inList=true;}html+="<li>"+l.replace(/^\d+[.)]\s+/,"")+"</li>";}
+    else if(l===""){flush();}
+    else{flush();html+="<p>"+l+"</p>";}});
+  flush();return html;
+}
+
+/* ── render ── */
+function render(){renderTopbar();renderTabbar();const app=$("app");
+  if(state.view==="chat")app.innerHTML=viewChat();
+  else if(state.view==="tools")app.innerHTML=viewHome();
+  else if(state.view==="tool")app.innerHTML=viewTool();
+  else if(state.view==="cabinet")app.innerHTML=viewCabinet();
+  document.querySelectorAll("textarea.area").forEach(grow);
+  renderModal();
+  if(state.view==="chat"){const ci=$("chatInput");if(ci)grow2(ci);scrollChat();}
+}
+function renderTopbar(){
+  const p=state.profile;
+  const right=`${p?`<div class="avatar" data-action="nav-cabinet" title="${esc(p.email||p.name)}">${esc((p.name||"?")[0].toUpperCase())}</div>`
+    :`<button class="loginbtn" data-action="open-auth">Войти</button>`}
+    <button class="iconbtn" data-action="open-settings" title="Настройки ИИ">⚙</button>`;
+  $("topbar").innerHTML=`<div class="brand" data-action="nav-chat"><span class="nub"></span>Neura<i>AI</i></div><div class="sp"></div>${right}`;
+}
+function renderTabbar(){
+  const v=state.view;
+  $("tabbar").innerHTML=`<div class="tabbar-in">
+    <button class="tab ${v==="chat"?"on":""}" data-action="nav-chat">${svg("chat")}<span>Чат</span></button>
+    <button class="tab ${(v==="tools"||v==="tool")?"on":""}" data-action="nav-tools">${svg("grid")}<span>Инструменты</span></button>
+    <button class="tab ${v==="cabinet"?"on":""}" data-action="nav-cabinet">${svg("user")}<span>Кабинет</span></button>
+  </div>`;
+}
+function viewHome(){
+  const tools=TOOLS.filter((t)=>state.cat==="Все"||t.cat===state.cat);
+  return `<div class="hero"><div class="rule-top"></div>
+    <div class="eyebrow">ИИ-комплекс для бизнеса · ${esc(CONFIG.brand)}</div>
+    <h1 class="h1">Один ИИ —<br><i>десятки задач</i></h1>
+    <p class="lede">Карточки для маркетплейсов, описания, посты, письма, ответы на отзывы, перевод, идеи и свободные запросы. Первые ${CONFIG.freeLimit} генераций — бесплатно для всех.</p></div>
+    <div class="cats">${CATS.map((c)=>`<div class="cat ${state.cat===c?"on":""}" data-action="set-cat" data-val="${c}">${c}</div>`).join("")}</div>
+    <div class="grid">${tools.map((t)=>`<div class="tool" data-action="open-tool" data-val="${t.id}">
+      <div class="ct">${t.cat}</div><div class="ico">${svg(t.icon)}</div><h3>${t.title}</h3><p>${t.desc}</p></div>`).join("")}</div>
+    <div class="foot">${esc(CONFIG.brand)} — статическая версия. Генерации хранятся в этом браузере.<br>Оплата — через Telegram, доступ открывается кодом активации.</div>`;
+}
+function fieldHTML(fl){
+  const v=state.form[fl.key];
+  if(fl.type==="seg"){return `<div class="field"><div class="flabel"><b>${fl.label}</b>${fl.sm?`<small>${fl.sm}</small>`:""}</div><div class="seg ${typeof fl.options[0]==="number"?"num":""}">${fl.options.map((o)=>`<button class="segbtn ${String(v)===String(o)?"on":""}" data-action="set-field" data-key="${fl.key}" data-val="${o}">${o}</button>`).join("")}</div></div>`;}
+  if(fl.type==="select"){return `<div class="field"><div class="flabel"><b>${fl.label}</b></div><select class="input" data-fieldsel="${fl.key}">${fl.options.map((o)=>`<option ${v===o?"selected":""}>${o}</option>`).join("")}</select></div>`;}
+  if(fl.type==="photo"){const ph=state.photo;return `<div class="field"><div class="flabel"><b>${fl.label}</b>${fl.sm?`<small>${fl.sm}</small>`:""}</div>
+    <div class="drop" data-action="pick-photo">${ph?`<img class="thumb" src="${ph.url}">`:`<div class="dropicon">📷</div>`}<div class="droptext"><b>${ph?"Фото загружено":"Прикрепить фото"}</b><span>${ph?"учтётся (Anthropic)":"JPG или PNG"}</span></div>${ph?`<button class="xbtn" data-action="clear-photo">Убрать</button>`:""}<input id="fileInput" type="file" accept="image/*" style="display:none"></div></div>`;}
+  if(fl.type==="area")return `<div class="field"><div class="flabel"><b>${fl.label}</b>${fl.sm?`<small>${fl.sm}</small>`:""}</div><textarea class="area" data-field="${fl.key}" rows="2" placeholder="${esc(fl.ph||"")}">${esc(v||"")}</textarea></div>`;
+  return `<div class="field"><div class="flabel"><b>${fl.label}</b>${fl.sm?`<small>${fl.sm}</small>`:""}</div><input class="input" data-field="${fl.key}" value="${esc(v||"")}" placeholder="${esc(fl.ph||"")}"></div>`;
+}
+function viewTool(){
+  const t=TOOL(state.toolId);
+  if(state.sub==="loading")return back(t)+`<div class="panel load"><div class="spin"></div><div class="load-t" id="loadt">${LOAD_STEPS[0]}</div></div>`;
+  let resultBlock="";
+  if(state.sub==="results"){resultBlock=t.render==="cards"?cardsResult(state.result):textResult();}
+  const fields=t.fields.map(fieldHTML).join("");
+  const err=state.error?`<div class="note err">${esc(state.error)}</div>`:"";
+  return back(t)+`<div class="toolhead"><div class="ico">${svg(t.icon)}</div><div><h2>${t.title}</h2><p>${t.desc}</p></div></div>
+    <div class="panel"><div class="fade">${fields}</div><div class="nav"><button class="btn gold" data-action="run">Сгенерировать</button></div>${err}</div>
+    ${resultBlock}`;
+}
+function back(t){return `<button class="back" data-action="nav-home">← Все инструменты</button>`;}
+function textResult(){
+  return `<div class="result fade"><div class="rh"><div class="eyebrow">Результат</div>
+    <button class="smallbtn" data-action="copy">Скопировать</button><button class="smallbtn" data-action="download">Скачать .txt</button></div>
+    <div>${mdLite(state.resultText)}</div></div>
+    <div class="nav"><button class="btn gold" data-action="run">Сгенерировать ещё</button></div>`;
+}
+
+/* ── карточки ── */
+function frame(layout){const top=[],mid=[],bot=[];let bg=null;
+  (layout||[]).forEach((z)=>{const a=(z.area||"").toLowerCase(),el=z.element||"";
+    if(a.includes("фон"))bg=el;else if(a.includes("верх")||a.includes("шапк"))top.push(el);
+    else if(a.includes("низ")||a.includes("подвал")||a.includes("футер"))bot.push(el);else mid.push(el);});
+  const band=(arr,cls,acc)=>`<div class="band ${cls}">${arr.map((t,i)=>`<div class="zone ${acc&&i===0?"accent":""}">${esc(t)}</div>`).join("")}</div>`;
+  return `<div class="frame"><span class="corner c1"></span><span class="corner c2"></span><span class="corner c3"></span><span class="corner c4"></span><div class="bg">${esc(bg||"фон / фото")}</div>${band(top,"top",false)}${band(mid,"mid",true)}${band(bot,"bot",false)}</div>`;}
+function slide(s){const subs=(s.subtexts||[]).filter(Boolean),ac=(s.accents||[]).filter(Boolean),inf=(s.infographic||[]).filter(Boolean),pal=(s.palette||[]).filter(Boolean);
+  const meta=(l,t)=>t?`<div class="metarow"><div class="mlabel">${l}</div><div class="mtext">${esc(t)}</div></div>`:"";
+  const chips=(l,arr,acc)=>arr.length?`<div class="metarow"><div class="mlabel">${l}</div><div class="chips">${arr.map((a)=>`<span class="chip ${acc?"acc":""}">${esc(a)}</span>`).join("")}</div></div>`:"";
+  const palette=pal.length?`<div class="metarow"><div class="mlabel">Палитра</div><div class="pal">${pal.map((c)=>`<span class="sw"><span class="swdot" style="background:${isHex(c)?hexOf(c):"#3A3640"}"></span>${esc(c)}</span>`).join("")}</div></div>`:"";
+  return `<div class="slide fade"><div class="slide-top">${frame(s.layout)}<div class="slide-body"><div class="slide-h"><span class="nn">${String(s.n).padStart(2,"0")}</span><span class="role">${esc(s.role||"Слайд")}</span></div>${s.goal?`<div class="goal">${esc(s.goal)}</div>`:""}${s.headline?`<div class="headline">«${esc(s.headline)}»</div>`:""}${subs.length?`<div class="sub">${subs.map(esc).join(" · ")}</div>`:""}</div></div><div>${meta("Смысл",s.message)}${meta("Визуальный стиль",s.style)}${chips("Акценты",ac,true)}${chips("Инфографика",inf,false)}${palette}</div></div>`;}
+function cardsResult(r){return `<div class="fade"><div class="concept"><div class="eyebrow">Общая идея линейки</div><p>${esc(r.concept)}</p></div>
+  <div class="sectionlabel"><h2>Идеи для карточек</h2><div class="srule"></div></div>
+  <div class="panel" style="padding:4px 18px">${r.slides.map((s)=>`<div class="idea"><span class="n">${String(s.n).padStart(2,"0")}</span><div><div class="role">${esc(s.role)}</div><div class="msg">${esc(s.message||s.goal)}</div></div></div>`).join("")}</div>
+  <div class="sectionlabel"><h2>Визуальная концепция</h2><div class="srule"></div></div>${r.slides.map(slide).join("")}
+  <div class="nav"><button class="btn gold" data-action="run">Сгенерировать ещё</button></div></div>`;}
+
+/* ── кабинет ── */
+function viewCabinet(){
+  const p=state.profile;
+  if(!p){
+    return `<button class="back" data-action="nav-chat">← В чат</button>
+    <div class="hero" style="margin-top:14px"><div class="eyebrow">Личный кабинет</div><h1 class="h1" style="font-size:34px">Войдите<br><i>в NeuraAI</i></h1>
+    <p class="lede">Профиль и история чатов хранятся в этом браузере. Представьтесь — и NeuraAI будет обращаться к вам по имени.</p></div>
+    <div class="nav"><button class="btn gold full" data-action="open-auth">Войти</button></div>
+    ${chatHistoryBlock()}`;
+  }
+  const total=state.chats.reduce((s,c)=>s+c.messages.length,0);
+  const stats=`<div class="cab-stats">
+    <div class="stat"><div class="num">${state.chats.length}</div><div class="cap">чатов сохранено</div></div>
+    <div class="stat"><div class="num">${total}</div><div class="cap">сообщений всего</div></div></div>
+    <div class="nav"><button class="btn gold" data-action="edit-profile">Изменить профиль</button><button class="btn ghost" data-action="logout">Выйти</button></div>`;
+  return `<button class="back" data-action="nav-chat">← В чат</button>
+    <div class="profilecard"><div class="bigava">${esc((p.name||"?")[0].toUpperCase())}</div>
+      <div><div class="eyebrow">Личный кабинет</div><div class="pname">${esc(p.name)}</div>${p.email?`<div class="pmail">${esc(p.email)}</div>`:""}</div></div>
+    ${stats}${chatHistoryBlock()}`;
+}
+function chatHistoryBlock(){
+  const list=state.chats.length
+    ? state.chats.slice().sort((a,b)=>b.updated-a.updated).map((c)=>`
+      <div class="chatrow" data-action="open-chat" data-val="${c.id}">
+        <div class="ci">${svg("chat")}</div>
+        <div class="cc"><div class="ct2">${esc(c.title)}</div><div class="cd">${new Date(c.updated).toLocaleString("ru-RU",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})} · ${c.messages.length} сообщ.</div></div>
+        <button class="delx" data-action="delete-chat" data-val="${c.id}" title="Удалить">×</button>
+      </div>`).join("")
+    : `<div class="emptyhist">Пока нет сохранённых чатов. Задайте вопрос в чате — он появится здесь.</div>`;
+  return `<div class="sectionlabel"><h2>История чатов</h2><div class="srule"></div></div>
+    <div class="chatlist">${list}</div>`;
+}
+
+/* ── модалки ── */
+function renderModal(){const root=$("modal-root");
+  if(!state.modal){root.innerHTML="";return;}
+  if(state.modal==="settings"){const yk=llm.provider==="yandexgpt";
+    root.innerHTML=`<div class="overlay" data-action="close-modal"><div class="modal" data-stop="1"><h2>Настройки ИИ</h2>
+      <div class="msub">В этом превью генерация работает без ключа. Для своего хостинга укажите API-ключ (сохранится на сессию; навсегда — в блоке CONFIG в коде).</div>
+      <div class="field"><div class="flabel"><b>Провайдер</b></div><select class="input" id="cfgProvider"><option value="anthropic" ${!yk?"selected":""}>Anthropic (из браузера)</option><option value="yandexgpt" ${yk?"selected":""}>YandexGPT (возможен CORS)</option></select></div>
+      <div class="field"><div class="flabel"><b>API-ключ</b></div><input class="input" id="cfgKey" value="${esc(llm.apiKey)}" placeholder="ваш ключ"></div>
+      ${yk?`<div class="field"><div class="flabel"><b>Yandex folder ID</b></div><input class="input" id="cfgFolder" value="${esc(llm.folderId)}"></div>`:""}
+      <div class="nav"><button class="btn gold full" data-action="save-cfg">Сохранить</button></div></div></div>`;return;}
+  if(state.modal==="auth"){const ed=state.authEdit&&state.profile;const nm=ed?state.profile.name:"";const em=ed?(state.profile.email||""):"";
+    const initial=(nm.trim()[0]||"").toUpperCase();
+    root.innerHTML=`<div class="overlay" data-action="close-modal"><div class="modal authmodal" data-stop="1">
+      <div class="authava" id="authAva">${initial||svg("user")}</div>
+      <h2 style="text-align:center">${ed?"Изменить профиль":"Добро пожаловать"}</h2>
+      <div class="msub" style="text-align:center">${ed?"Обновите имя — NeuraAI будет обращаться к вам так.":"Как к вам обращаться? NeuraAI запомнит и будет звать по имени."}</div>
+      <div class="field"><input class="input" id="authName" value="${esc(nm)}" placeholder="Ваше имя" autocomplete="given-name"></div>
+      <div class="field"><input class="input" id="authEmail" value="${esc(em)}" type="email" placeholder="E-mail (необязательно)"></div>
+      <div id="authErr"></div>
+      <div class="nav"><button class="btn gold full" data-action="save-auth">${ed?"Сохранить":"Продолжить"}</button></div>
+      <div class="authnote">🔒 Профиль хранится только в этом браузере. Без пароля и серверов.</div>
+    </div></div>`;return;}
+}
+
+/* ── действия ── */
+async function run(){
+  const t=TOOL(state.toolId);
+  // собрать значения формы из state.form (уже синхронизировано), проверить обязательные
+  const required=t.fields.filter((f)=>f.type==="input"||f.type==="area");
+  const empty=required.length && required.every((f)=>!String(state.form[f.key]||"").trim());
+  if(empty){state.error="Заполните поля запроса.";render();return;}
+  state.sub="loading";state.error="";render();
+  let i=0;const timer=setInterval(()=>{i=(i+1)%LOAD_STEPS.length;const el=$("loadt");if(el)el.textContent=LOAD_STEPS[i];},1500);
+  try{
+    const prompt=t.build(state.form);
+    const raw=await callLLM(prompt,t.id==="cards");
+    if(t.render==="cards")state.result=parseConcept(raw);
+    else state.resultText=raw.trim();
+    state.sub="results";render();scrollTop();
+  }catch(e){state.sub="form";state.error=e.message||"Не удалось сгенерировать";render();}
+  finally{clearInterval(timer);}
+}
+function openTool(id){const t=TOOL(id);state.toolId=id;state.view="tool";state.sub="form";state.error="";state.result=null;state.resultText="";state.photo=null;
+  state.form={};t.fields.forEach((f)=>{if(f.type==="seg")state.form[f.key]=f.def!=null?f.def:f.options[0];else if(f.type==="select")state.form[f.key]=f.options[0];else state.form[f.key]="";});
+  render();scrollTop();}
+function openAuth(edit){state.modal="auth";state.authEdit=!!edit;renderModal();const a=$("authName");if(a)a.focus();}
+function saveAuth(){
+  const n=($("authName").value||"").trim();
+  if(!n){const e=$("authErr");if(e)e.innerHTML=`<div class="note err">Введите имя.</div>`;return;}
+  state.profile={name:n,email:($("authEmail").value||"").trim()};save("neura_profile",state.profile);
+  state.modal=null;state.authEdit=false;render();
+}
+
+document.addEventListener("click",(e)=>{
+  const t=e.target.closest("[data-action]");if(!t)return;
+  const a=t.dataset.action,v=t.dataset.val;
+  if(a==="close-modal"){if(e.target.classList.contains("overlay")){state.modal=null;state.authEdit=false;renderModal();}return;}
+  switch(a){
+    case "nav-chat":state.view="chat";render();break;
+    case "nav-tools":case "nav-home":state.view="tools";render();scrollTop();break;
+    case "nav-cabinet":state.view="cabinet";render();scrollTop();break;
+    case "new-chat":newChat();state.view="chat";render();break;
+    case "send-chat":{const ci=$("chatInput");if(ci){const val=ci.value;ci.value="";sendChat(val);}break;}
+    case "suggest":sendChat(v);break;
+    case "open-chat":clearInterval(state._rev);state.currentId=v;saveChats();state.view="chat";render();break;
+    case "delete-chat":{e.stopPropagation();state.chats=state.chats.filter((c)=>c.id!==v);if(state.currentId===v)state.currentId=state.chats[0]?state.chats[0].id:null;saveChats();render();break;}
+    case "set-cat":state.cat=v;render();break;
+    case "open-tool":openTool(v);break;
+    case "open-settings":state.modal="settings";renderModal();break;
+    case "open-auth":openAuth(false);break;
+    case "edit-profile":openAuth(true);break;
+    case "save-auth":saveAuth();break;
+    case "set-field":state.form[t.dataset.key]=isNaN(Number(v))?v:Number(v);render();break;
+    case "run":run();break;
+    case "pick-photo":{const fi=$("fileInput");if(fi)fi.click();break;}
+    case "clear-photo":e.stopPropagation();state.photo=null;render();break;
+    case "copy":navigator.clipboard&&navigator.clipboard.writeText(state.resultText);t.textContent="Скопировано ✓";setTimeout(()=>{t.textContent="Скопировать";},1500);break;
+    case "download":{const blob=new Blob([state.resultText],{type:"text/plain;charset=utf-8"});const u=URL.createObjectURL(blob);const link=document.createElement("a");link.href=u;link.download="neura-result.txt";link.click();URL.revokeObjectURL(u);break;}
+    case "logout":state.profile=null;save("neura_profile",null);state.view="chat";render();break;
+    case "save-cfg":{llm.provider=$("cfgProvider").value;llm.apiKey=$("cfgKey").value.trim();if($("cfgFolder"))llm.folderId=$("cfgFolder").value.trim();state.modal=null;renderModal();break;}
+  }
+});
+document.addEventListener("input",(e)=>{const el=e.target;
+  if(el.dataset&&el.dataset.field){state.form[el.dataset.field]=el.value;if(el.classList.contains("area"))grow(el);}
+  if(el.dataset&&el.dataset.fieldsel){state.form[el.dataset.fieldsel]=el.value;}
+  if(el.id==="cfgProvider"){llm.provider=el.value;renderModal();}
+  if(el.id==="chatInput"){grow2(el);}});
+document.addEventListener("keydown",(e)=>{
+  if(e.target&&e.target.id==="chatInput"&&e.key==="Enter"&&!e.shiftKey){e.preventDefault();const val=e.target.value;e.target.value="";sendChat(val);}});
+document.addEventListener("change",(e)=>{if(e.target.id==="fileInput"){const file=e.target.files&&e.target.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{const url=r.result;state.photo={url,b64:String(url).split(",")[1],mime:file.type||"image/jpeg"};render();};r.readAsDataURL(file);}});
+
+render();
+</script>
+</body>
+</html>
