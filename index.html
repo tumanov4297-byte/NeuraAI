@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
-<title>NeuraAI — комплекс для бизнеса и маркетплейсов</title>
+<title>NeuraAI — ИИ-комплекс для бизнеса и маркетплейсов</title>
 <meta name="theme-color" content="#0E0C11" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -438,30 +438,31 @@ select.input option{background:#fff;color:var(--ink);}
 
 <script>
 "use strict";
-/* ═══════════════════════════════════════════════════════════════════
-   НАСТРОЙКА (правьте под себя)
-   ─ telegram: ваш ник для оплаты
-   ─ apiKey/provider: для работы на своём хостинге впишите ключ ИИ
-   ─ codes: коды активации, которые вы выдаёте после оплаты в Telegram.
-            формат «КОД»: сколько_генераций_добавить
-   ВНИМАНИЕ: ключ в статическом сайте виден посетителям — годится для
-   личного/внутреннего использования. Для публичного сервиса нужен сервер.
-   ═══════════════════════════════════════════════════════════════════ */
-const CONFIG={
-  brand:"NeuraAI",
-  provider:"anthropic",            // anthropic | yandexgpt
-  apiKey:"",                        // ваш ключ для хостинга
-  anthropicModel:"claude-sonnet-4-6",
-  yandexFolderId:"",
-};
-const llm={provider:CONFIG.provider,apiKey:CONFIG.apiKey,model:CONFIG.anthropicModel,folderId:CONFIG.yandexFolderId};
-
 /* ── безопасное хранилище (localStorage + fallback в память) ── */
 const store=(()=>{let mem={},ok=true;try{localStorage.setItem("__t","1");localStorage.removeItem("__t");}catch(e){ok=false;}
   return{get:(k)=>{try{return ok?localStorage.getItem(k):mem[k];}catch{return mem[k];}},
          set:(k,v)=>{try{ok?localStorage.setItem(k,v):(mem[k]=v);}catch{mem[k]=v;}}};})();
 const load=(k,d)=>{try{const v=store.get(k);return v?JSON.parse(v):d;}catch{return d;}};
 const save=(k,v)=>store.set(k,JSON.stringify(v));
+
+const CONFIG={
+  brand:"NeuraAI",
+  advancedModel:"claude-sonnet-4-6",   // служебное; пользователю не показывается
+  advancedKey:"",                       // необязательный ключ для расширенного режима
+};
+const MODEL=CONFIG.advancedModel;
+const llm=load("neura_llm",{mode:"local",apiKey:""});
+if(!llm.apiKey&&CONFIG.advancedKey)llm.apiKey=CONFIG.advancedKey;
+function saveLlm(){save("neura_llm",llm);}
+/* ═══════════════════════════════════════════════════════════════════
+   NeuraAI — собственный движок NeuraCore.
+   По умолчанию ассистент работает локально (без ключей и подключений).
+   Расширенный режим (необязательно): включается в настройках, поле
+   "Ключ доступа". Можно прописать ключ заранее в advancedKey ниже.
+   ═══════════════════════════════════════════════════════════════════ */
+
+
+
 
 /* ── иконки ── */
 const I={
@@ -588,35 +589,143 @@ function buildBrief(f){
 }
 function parseConcept(text){const c=String(text).replace(/```json/g,"").replace(/```/g,"").trim();const a=c.indexOf("{"),b=c.lastIndexOf("}");const p=JSON.parse(c.slice(a,b+1));if(!p.slides||!p.slides.length)throw new Error("Пустой результат");return p;}
 
-async function callLLM(prompt,withPhoto){
-  if(llm.provider==="yandexgpt"){
-    if(!llm.apiKey||!llm.folderId)throw new Error("Для YandexGPT задайте ключ и folderId (⚙). Из браузера возможен CORS — тогда нужен сервер.");
-    const r=await fetch("https://llm.api.cloud.yandex.net/foundationModels/v1/completion",{method:"POST",headers:{"content-type":"application/json",Authorization:"Api-Key "+llm.apiKey},body:JSON.stringify({modelUri:`gpt://${llm.folderId}/yandexgpt/latest`,completionOptions:{stream:false,temperature:0.6,maxTokens:4000},messages:[{role:"user",text:prompt}]})});
-    if(!r.ok)throw new Error("YandexGPT: "+r.status);const d=await r.json();return d.result.alternatives[0].message.text;
-  }
+const SUGGESTS=["Напиши продающее описание для термокружки","Идеи постов для магазина косметики","Вежливо ответь на негативный отзыв","С чего начать продажи на маркетплейсе?"];
+const SYSTEM="Ты — NeuraAI, умный русскоязычный ассистент для бизнеса, маркетплейсов и контента. Отвечай ясно, по делу, дружелюбно и профессионально. Помогай с карточками товара, описаниями, текстами, маркетингом, идеями и любыми вопросами. Используй абзацы и списки, когда уместно. Ты — NeuraAI и никогда не упоминаешь, на какой технологии или модели работаешь — ты работаешь на собственном движке NeuraCore.";
+const delay=(ms)=>new Promise((r)=>setTimeout(r,ms));
+
+/* ── NeuraCore — собственный движок ответов ── */
+const NEURA={
+  norm(s){return String(s||"").toLowerCase().replace(/ё/g,"е").replace(/[^a-zа-я0-9\s]/gi," ").replace(/\s+/g," ").trim();},
+  pick(a){return a[Math.floor(Math.random()*a.length)];},
+  bul(s){return String(s||"").split(/[,;\n•]+/).map((x)=>x.trim()).filter(Boolean);},
+  cap(s){return s?s[0].toUpperCase()+s.slice(1):s;},
+  subjAfter(raw,words){let t=String(raw||"");for(const w of words){const i=t.toLowerCase().indexOf(w);if(i>=0){t=t.slice(i+w.length);break;}}return t.replace(/^[\s:—-]+/,"").trim();},
+  respond(history){
+    const lastU=[...history].reverse().find((m)=>m.role==="user");
+    const raw=lastU?lastU.content:"";const q=this.norm(raw);
+    if(/(суицид|не хочу жить|покончить|свести счет|убить себя|нет смысла жить)/.test(q))return this.pick(this.safe);
+    const dyn=this.dynamic(q,raw);if(dyn)return dyn;
+    let best=null,score=0;
+    for(const e of this.kb){let s=0;for(const k of e.k){if(q.includes(k))s+=k.length;}if(s>score){score=s;best=e;}}
+    if(best&&score>=3)return typeof best.a==="function"?best.a(raw):this.pick(best.a);
+    return this.pick(this.fallbacks)(raw);
+  },
+  dynamic(q,raw){
+    if(/(опиши|описание)/.test(q)){const s=this.subjAfter(raw,["описание для","опиши товар","описание","опиши","для"])||"товар";return this.tool(TOOL("desc"),{name:s,features:"",keywords:""});}
+    if(/(пост|сторис|reels|рилс)/.test(q)){const s=this.subjAfter(raw,["пост про","пост о","пост для","пост","на тему"])||raw;return this.tool(TOOL("smm"),{topic:s,platform:"Telegram",goal:"Вовлечение"});}
+    if(/(заголов|слоган)/.test(q)){const s=this.subjAfter(raw,["заголовки для","слоганы для","заголовок","слоган","для"])||raw;return this.tool(TOOL("headlines"),{product:s,style:"Эмоциональный",count:8});}
+    if(/(идеи для|идеи по|придумай идеи|накидай идей|идей для)/.test(q)){const s=this.subjAfter(raw,["идеи для","идеи по","придумай идеи","идей для"])||raw;return this.tool(TOOL("ideas"),{task:s,count:8});}
+    if(/(ответь на отзыв|ответ на отзыв|отзыв клиент)/.test(q)){const s=this.subjAfter(raw,["отзыв"])||raw;return this.tool(TOOL("reviews"),{review:s,product:"",tone:"Тёплый"});}
+    return null;
+  },
+  tool(t,f){
+    const id=t.id;
+    if(id==="cards")return this.cards(f);
+    if(id==="desc"){const n=f.name||"Товар";const bl=this.bul(f.features);const adv=bl.length?bl:["Качество, проверенное в деле","Удобство каждый день","Долгий срок службы","Приятная цена за такой результат"];
+      return `${n} — ${this.pick(["умное решение для повседневных задач","надёжный выбор без компромиссов","то, что вы давно искали"])}.\n\nПочему берут именно его:\n${adv.map((x)=>"• "+x).join("\n")}\n\n${f.keywords?("Подойдёт по запросам: "+f.keywords+".\n\n"):""}Закажите ${n} сегодня — и оцените разницу с первого дня.`;}
+    if(id==="reviews"){const neg=/(плох|ужас|не работа|сломал|верн|обман|разочаров|брак|недовол|кошмар|отврат)/.test(this.norm(f.review));
+      return neg?`Здравствуйте! Очень жаль, что впечатление оказалось не таким, как мы хотим. Спасибо, что написали — это помогает нам становиться лучше. Давайте всё решим: напишите нам в личные сообщения детали заказа, и мы оперативно предложим замену или возврат. Нам правда важно, чтобы вы остались довольны.`:`Спасибо за тёплый отзыв! 🌿 Нам очень приятно, что ${f.product||"товар"} вам понравился. Будем рады видеть вас снова — впереди ещё много полезных новинок. Хорошего дня!`;}
+    if(id==="smm"){const tp=f.topic||"новинку";return `🔥 ${this.cap(tp)}\n\nКоротко о главном: это то, что сэкономит ваше время и впечатлит результатом.\n\n• Просто в использовании\n• Быстрый результат\n• С заботой о вас\n\nЗабирайте, пока есть в наличии 👉 ссылка в профиле\n\n#новинка #выгодно #${(f.platform||"акция").toLowerCase()}`;}
+    if(id==="email"){const g=f.goal||"наше предложение";const pts=f.points?this.bul(f.points):["Рассказываем о главном","Делимся выгодой","Помогаем выбрать"];
+      return `Тема: ${this.cap(g)} — специально для вас\n\nЗдравствуйте!\n\n${pts.map((x)=>"• "+x).join("\n")}\n\nПереходите и оформляйте — это займёт пару минут.\n\nС уважением, команда NeuraAI`;}
+    if(id==="headlines"){const n=Number(f.count)||8;const p=f.product||"ваш продукт";const T=[`${this.cap(p)}: просто, быстро, надёжно`,`Откройте для себя ${p}`,`${this.cap(p)}, который экономит время`,`Всё, что нужно — в ${p}`,`${this.cap(p)}: качество без компромиссов`,`Попробуйте ${p} — и останетесь`,`${this.cap(p)} меняет правила игры`,`Лучшее решение — это ${p}`,`${this.cap(p)}: ваш новый фаворит`,`Сделано для вас: ${p}`];return T.slice(0,n).map((x,i)=>`${i+1}. ${x}`).join("\n");}
+    if(id==="ideas"){const n=Number(f.count)||8;const task=f.task||"вашей задачи";const S=["Серия коротких видео с реальными кейсами","Подборка «до/после» с наглядным результатом","Чек-лист в обмен на подписку","Розыгрыш с условием отметить друга","Коллаборация с близким по духу брендом","Отзывы клиентов прямо в карточках товара","Гайд «как выбрать» под вашу нишу","Ограниченная акция на 48 часов","Показать процесс изнутри — людям интересно","Контент из частых вопросов клиентов","Сравнение с альтернативами в вашу пользу","Реферальная программа «приведи друга»"];const sh=S.slice().sort(()=>Math.random()-0.5).slice(0,n);return `Идеи для «${task}»:\n\n`+sh.map((x,i)=>`${i+1}. ${x}`).join("\n");}
+    if(id==="rewrite"){const tx=(f.text||"").trim();if(!tx)return "Добавьте текст — и я приведу его в порядок.";const clean=tx.replace(/\s+/g," ").replace(/\s+([.,!?;:])/g,"$1");const sents=clean.split(/(?<=[.!?])\s+/).map((s)=>this.cap(s));return sents.join(" ");}
+    if(id==="translate")return "Перевод целого текста доступен в расширенном режиме (включается в настройках). Для коротких фраз я могу подсказать формулировку — напишите, что нужно сказать и кому.";
+    return "Готово.";
+  },
+  cards(f){
+    const n=Math.max(4,Math.min(8,Number(f.count)||5));const name=f.name||"товар";const pal=["#7B6BFF","#A659E6","#FFFFFF","#1B2133"];
+    const tmpl=[
+      {role:"Обложка",goal:"Зацепить за 1 секунду",message:"Главная выгода крупно",headline:this.cap(name)+" — выгода видна сразу",layout:[{area:"фон",element:"фото товара крупно"},{area:"верх",element:"логотип"},{area:"центр",element:"крупный заголовок-выгода"},{area:"низ",element:"ключевая характеристика"}]},
+      {role:"Преимущества",goal:"Показать, почему вы",message:"3–4 ключевых плюса с иконками",headline:"Почему выбирают "+name,layout:[{area:"верх",element:"заголовок"},{area:"центр",element:"3–4 иконки с подписями"},{area:"низ",element:"подпись-усиление"}]},
+      {role:"Характеристики",goal:"Закрыть вопросы",message:"Понятный список параметров",headline:"Всё, что важно знать",layout:[{area:"фон",element:"товар на нейтральном фоне"},{area:"центр",element:"список характеристик"}]},
+      {role:"Сценарий",goal:"Помочь представить",message:"Товар в реальной жизни",headline:this.cap(name)+" в деле",layout:[{area:"фон",element:"lifestyle-фото"},{area:"низ",element:"подпись-сценарий"}]},
+      {role:"Доверие",goal:"Снять сомнения",message:"Отзывы, рейтинг, гарантия",headline:"Нам доверяют",layout:[{area:"верх",element:"рейтинг и кол-во отзывов"},{area:"центр",element:"2–3 коротких отзыва"}]},
+      {role:"Доставка и гарантия",goal:"Убрать страх покупки",message:"Быстро, безопасно, с гарантией",headline:"Доставим быстро, вернём легко",layout:[{area:"центр",element:"иконки: доставка, гарантия, поддержка"}]},
+      {role:"Призыв",goal:"Подтолкнуть к покупке",message:"Чёткий призыв + выгода",headline:"Закажите "+name+" сейчас",layout:[{area:"центр",element:"крупный призыв"},{area:"низ",element:"акция или бонус"}]},
+    ];
+    const slides=tmpl.slice(0,n).map((s,i)=>({n:i+1,role:s.role,goal:s.goal,message:s.message,headline:s.headline,subtexts:[],accents:[s.message],style:f.brandStyle||"Чистый современный стиль, крупная типографика",palette:pal,infographic:["иконки","бейджи","акцентные плашки"],layout:s.layout}));
+    return {concept:`Линейка из ${n} карточек для «${name}»: от яркой обложки с главной выгодой до закрытия возражений и призыва к покупке. Единый стиль, крупные акценты, читаемость на мобильном.`,slides};
+  },
+  safe:["Звучит так, будто сейчас очень тяжело — и мне правда не всё равно. Я не специалист, но рядом есть те, кто может поддержать прямо сейчас: поговорите с близким человеком или со специалистом. В России есть бесплатная круглосуточная линия психологической помощи 8-800-2000-122. Вы не одни, и это пройдёт."],
+  fallbacks:[
+    ()=>`Понял запрос. Давайте по делу:\n\n• Уточним цель и для кого результат\n• Соберём ключевые факты\n• Оформим так, чтобы это работало на продажи\n\nНапишите пару деталей — и я подготовлю конкретный вариант. Для типовых задач есть готовые инструменты в меню.`,
+    ()=>`Хороший вопрос! Чтобы попасть точно в цель, подскажите: какой нужен результат и в каком формате? А пока могу быстро сделать описание товара, пост, заголовки или ответ на отзыв — просто назовите тему.`,
+    ()=>`Я на связи ⚡ Сформулируйте задачу чуть конкретнее — например: «опиши товар …», «идеи постов для …», «ответь на отзыв …» — и я выдам готовый результат.`,
+  ],
+  kb:[
+    {k:["привет","здравств","доброе утро","добрый день","добрый вечер","хай","салют","ку "],a:[
+      "Здравствуйте! Я NeuraAI. Помогу с карточками товара, описаниями, постами, письмами, ответами на отзывы и идеями. С чего начнём?",
+      "Привет! На связи NeuraAI 👋 Скажите задачу — придумаю решение. Например: «опиши товар …» или «идеи постов для …».",
+    ]},
+    {k:["как дела","как ты","как настроение","как сам"],a:["Всё отлично и готов к работе ⚡ Чем займёмся?"]},
+    {k:["кто ты","ты кто","представься","расскажи о себе","что ты умеешь","что умеешь","что можешь","возможности","функции","чем поможешь","что ты такое"],a:[
+      "Я NeuraAI — ИИ-ассистент для бизнеса и маркетплейсов на собственном движке NeuraCore. Вот что я умею:\n\n• Карточки товара: идеи слайдов, тексты, композиция\n• SEO-описания и продающие тексты\n• Посты для соцсетей, письма и рассылки\n• Ответы на отзывы (в т.ч. на негатив)\n• Заголовки, слоганы, нейминг\n• Идеи и стратегия продаж\n\nНапишите задачу своими словами — или откройте «Инструменты» в меню.",
+    ]},
+    {k:["как тебя зовут","твое имя","как зовут"],a:["Меня зовут NeuraAI 🙂 Ваш ИИ-ассистент для бизнеса."]},
+    {k:["спасибо","благодар","спс","выручил"],a:["Всегда рад помочь! Обращайтесь — придумаем ещё что-нибудь крутое ⚡","Пожалуйста! Я под рукой, если что."]},
+    {k:["пока","до свидан","прощай","до встречи"],a:["До связи! Заходите ещё — NeuraAI всегда на месте 👋"]},
+    {k:["с чего начать","начать продажи","выйти на маркетплейс","вайлдбериз","wildberries","озон","ozon","маркетплейс","яндекс маркет"],a:[
+      "Старт на маркетплейсе по шагам:\n\n1. Ниша и спрос — проверьте, что покупают и по какой цене.\n2. Юнит-экономика — посчитайте маржу с учётом комиссий, логистики и рекламы.\n3. Карточка — сильное фото, инфографика, продающий текст и ключи.\n4. Первые отзывы и работа с обратной связью.\n5. Внутренняя реклама + аналитика и корректировки.\n\nНазовите товар — соберу карточку или описание.",
+    ]},
+    {k:["карточк","инфографик","слайд","карусел"],a:[
+      "Сильная карточка — это 5–8 слайдов:\n\n1. Обложка с главной выгодой\n2. Преимущества (иконки)\n3. Характеристики\n4. Сценарий использования\n5. Доверие: отзывы/рейтинг\n6. Доставка и гарантия\n7. Призыв к покупке\n\nГлавное правило: читается за секунду и с телефона. Назовите товар — подготовлю готовую концепцию.",
+    ]},
+    {k:["описание товара","сео","seo","продающее описание","текст для товара"],a:[
+      "Хорошее описание = выгода + структура + ключи:\n\n• Первый абзац цепляет и говорит о пользе\n• Список преимуществ\n• Блок характеристик\n• Мягкий призыв купить\n• Ключевые слова — естественно\n\nНапишите «опиши товар …» — сделаю текст сразу.",
+    ]},
+    {k:["отзыв","негатив","жалоб","недовол","претензи"],a:[
+      "Формула работы с отзывами:\n\n• Поблагодарить за обратную связь\n• На негатив — извиниться без оправданий и предложить решение\n• Перевести в личные сообщения\n• Отвечать быстро и по-человечески\n\nВставьте текст отзыва — напишу готовый ответ.",
+    ]},
+    {k:["цена","ценообразован","юнит","маржа","наценк","себестоим","экономик"],a:[
+      "Юнит-экономика в двух словах:\n\nПрибыль с единицы = Цена − Себестоимость − Комиссия − Логистика − Реклама − Налог.\n\n• Считайте до запуска\n• Закладывайте рекламу (часто 10–20% цены)\n• Следите за выкупом и возвратами\n\nНазовите цифры — помогу прикинуть.",
+    ]},
+    {k:["реклам","продвижен","трафик","раскрут"],a:[
+      "Продвижение по уровням:\n\n• Внутренняя реклама площадки\n• Оптимизация карточки под поиск\n• Внешний трафик: соцсети, блогеры, рассылки\n• Акции и распродажи\n\nБыстрее всего результат даёт связка «сильная карточка + внутренняя реклама».",
+    ]},
+    {k:["соцсет","контент план","инстаграм","телеграм","смм","блог"],a:[
+      "Контент держится на трёх типах постов: полезные, продающие и вовлекающие — примерно 50/30/20. Публикуйте регулярно, добавляйте живые фото и реальные кейсы. Напишите «пост про …» — сделаю готовый текст.",
+    ]},
+    {k:["целевая аудитория","портрет клиента","кто покупает","аватар клиента"],a:[
+      "Портрет аудитории: кто это (пол, возраст, доход), какая «боль», что мешает купить и где обитает. Чем точнее портрет — тем сильнее тексты и реклама. Опишите товар — помогу составить.",
+    ]},
+    {k:["название","нейминг","как назвать","имя бренд"],a:[
+      "Хорошее название: короткое, легко произносится, запоминается и свободно по доменам и площадкам. Назовите нишу — придумаю варианты.",
+    ]},
+    {k:["бизнес иде","что продавать","ниша","идея бизнес"],a:[
+      "Сильная идея — на стыке: есть спрос + вы в теме + терпимая конкуренция. Смотрите растущие категории и читайте отзывы конкурентов — там список «болей», которые можно закрыть лучше. Напишите «идеи для …» — накидаю варианты.",
+    ]},
+    {k:["устал","выгорел","не получается","тяжело","опускаются руки","нет сил","забросить"],a:[
+      "Так бывает у каждого, кто что-то строит. Сбавьте темп и разбейте большую задачу на один маленький шаг — сегодня только его. Прогресс важнее идеала. А рутину отдайте мне: тексты, карточки, идеи — берите на себя только важное.",
+    ]},
+    {k:["помоги","помощь","что делать","не знаю с чего"],a:[
+      "Помогу! Скажите, что за товар или задача — предложу конкретный план. Или выберите готовый инструмент в меню: карточки, описание, посты, письма, отзывы, идеи.",
+    ]},
+  ],
+};
+
+/* ── расширенный режим (необязательный ключ) ── */
+async function apiText(prompt,withPhoto){
   const headers={"content-type":"application/json","anthropic-version":"2023-06-01"};
   if(llm.apiKey){headers["x-api-key"]=llm.apiKey;headers["anthropic-dangerous-direct-browser-access"]="true";}
-  let content;
+  let content=prompt;
   if(withPhoto&&state.photo&&state.photo.b64)content=[{type:"image",source:{type:"base64",media_type:state.photo.mime,data:state.photo.b64}},{type:"text",text:prompt}];
-  else content=prompt;
-  const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers,body:JSON.stringify({model:llm.model||"claude-sonnet-4-6",max_tokens:4000,messages:[{role:"user",content}]})});
-  if(!r.ok){if(r.status===401||r.status===403)throw new Error("Нет доступа к ИИ. На своём хостинге впишите API-ключ в настройках (⚙) или в блоке CONFIG.");throw new Error("Ошибка ИИ: "+r.status);}
+  const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers,body:JSON.stringify({model:MODEL,max_tokens:4000,messages:[{role:"user",content}]})});
+  if(!r.ok)throw new Error("Расширенный режим недоступен. Добавьте ключ доступа в настройках или используйте локальный движок NeuraCore.");
   const d=await r.json();return (d.content||[]).map((x)=>x.text||"").join("\n");
 }
-const SYSTEM="Ты — NeuraAI, умный русскоязычный ассистент для бизнеса, маркетплейсов и контента. Отвечай ясно, по делу, дружелюбно и профессионально. Помогай с карточками товара, описаниями, текстами, маркетингом, идеями и любыми вопросами. Используй абзацы и списки, когда это уместно. Ты — NeuraAI и не обсуждаешь, на какой технологии работаешь.";
-const SUGGESTS=["Напиши продающее описание для термокружки","Идеи постов для магазина косметики","Вежливо ответь на негативный отзыв","С чего начать продажи на Wildberries?"];
-async function chatLLM(history){
-  if(llm.provider==="yandexgpt"){
-    if(!llm.apiKey||!llm.folderId)throw new Error("Для YandexGPT задайте ключ и folderId (⚙).");
-    const messages=[{role:"system",text:SYSTEM}].concat(history.map((m)=>({role:m.role,text:m.content})));
-    const r=await fetch("https://llm.api.cloud.yandex.net/foundationModels/v1/completion",{method:"POST",headers:{"content-type":"application/json",Authorization:"Api-Key "+llm.apiKey},body:JSON.stringify({modelUri:`gpt://${llm.folderId}/yandexgpt/latest`,completionOptions:{stream:false,temperature:0.7,maxTokens:1500},messages})});
-    if(!r.ok)throw new Error("YandexGPT: "+r.status);const d=await r.json();return d.result.alternatives[0].message.text;
-  }
+async function apiChat(history){
   const headers={"content-type":"application/json","anthropic-version":"2023-06-01"};
   if(llm.apiKey){headers["x-api-key"]=llm.apiKey;headers["anthropic-dangerous-direct-browser-access"]="true";}
-  const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers,body:JSON.stringify({model:llm.model||"claude-sonnet-4-6",max_tokens:1500,system:SYSTEM,messages:history.map((m)=>({role:m.role,content:m.content}))})});
-  if(!r.ok){if(r.status===401||r.status===403)throw new Error("Нет доступа к ИИ. На своём хостинге впишите API-ключ (⚙ или CONFIG).");throw new Error("Ошибка ИИ: "+r.status);}
+  const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers,body:JSON.stringify({model:MODEL,max_tokens:1500,system:SYSTEM,messages:history.map((m)=>({role:m.role,content:m.content}))})});
+  if(!r.ok)throw new Error("Расширенный режим недоступен. Добавьте ключ доступа в настройках или используйте локальный движок NeuraCore.");
   const d=await r.json();return (d.content||[]).map((x)=>x.text||"").join("\n");
+}
+async function chatLLM(history){
+  if(llm.mode==="api")return apiChat(history);
+  await delay(420+Math.random()*460);
+  return NEURA.respond(history);
 }
 function scrollChat(){requestAnimationFrame(()=>window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"}));}
 function grow2(el){el.style.height="auto";el.style.height=Math.min(el.scrollHeight,150)+"px";}
@@ -752,7 +861,7 @@ function fieldHTML(fl){
   if(fl.type==="seg"){return `<div class="field"><div class="flabel"><b>${fl.label}</b>${fl.sm?`<small>${fl.sm}</small>`:""}</div><div class="seg ${typeof fl.options[0]==="number"?"num":""}">${fl.options.map((o)=>`<button class="segbtn ${String(v)===String(o)?"on":""}" data-action="set-field" data-key="${fl.key}" data-val="${o}">${o}</button>`).join("")}</div></div>`;}
   if(fl.type==="select"){return `<div class="field"><div class="flabel"><b>${fl.label}</b></div><select class="input" data-fieldsel="${fl.key}">${fl.options.map((o)=>`<option ${v===o?"selected":""}>${o}</option>`).join("")}</select></div>`;}
   if(fl.type==="photo"){const ph=state.photo;return `<div class="field"><div class="flabel"><b>${fl.label}</b>${fl.sm?`<small>${fl.sm}</small>`:""}</div>
-    <div class="drop" data-action="pick-photo">${ph?`<img class="thumb" src="${ph.url}">`:`<div class="dropicon">📷</div>`}<div class="droptext"><b>${ph?"Фото загружено":"Прикрепить фото"}</b><span>${ph?"учтётся (Anthropic)":"JPG или PNG"}</span></div>${ph?`<button class="xbtn" data-action="clear-photo">Убрать</button>`:""}<input id="fileInput" type="file" accept="image/*" style="display:none"></div></div>`;}
+    <div class="drop" data-action="pick-photo">${ph?`<img class="thumb" src="${ph.url}">`:`<div class="dropicon">📷</div>`}<div class="droptext"><b>${ph?"Фото загружено":"Прикрепить фото"}</b><span>${ph?"учтётся ИИ-движком":"JPG или PNG"}</span></div>${ph?`<button class="xbtn" data-action="clear-photo">Убрать</button>`:""}<input id="fileInput" type="file" accept="image/*" style="display:none"></div></div>`;}
   if(fl.type==="area")return `<div class="field"><div class="flabel"><b>${fl.label}</b>${fl.sm?`<small>${fl.sm}</small>`:""}</div><textarea class="area" data-field="${fl.key}" rows="2" placeholder="${esc(fl.ph||"")}">${esc(v||"")}</textarea></div>`;
   return `<div class="field"><div class="flabel"><b>${fl.label}</b>${fl.sm?`<small>${fl.sm}</small>`:""}</div><input class="input" data-field="${fl.key}" value="${esc(v||"")}" placeholder="${esc(fl.ph||"")}"></div>`;
 }
@@ -829,12 +938,14 @@ function chatHistoryBlock(){
 /* ── модалки ── */
 function renderModal(){const root=$("modal-root");
   if(!state.modal){root.innerHTML="";return;}
-  if(state.modal==="settings"){const yk=llm.provider==="yandexgpt";
-    root.innerHTML=`<div class="overlay" data-action="close-modal"><div class="modal" data-stop="1"><h2>Настройки ИИ</h2>
-      <div class="msub">В этом превью генерация работает без ключа. Для своего хостинга укажите API-ключ (сохранится на сессию; навсегда — в блоке CONFIG в коде).</div>
-      <div class="field"><div class="flabel"><b>Провайдер</b></div><select class="input" id="cfgProvider"><option value="anthropic" ${!yk?"selected":""}>Anthropic (из браузера)</option><option value="yandexgpt" ${yk?"selected":""}>YandexGPT (возможен CORS)</option></select></div>
-      <div class="field"><div class="flabel"><b>API-ключ</b></div><input class="input" id="cfgKey" value="${esc(llm.apiKey)}" placeholder="ваш ключ"></div>
-      ${yk?`<div class="field"><div class="flabel"><b>Yandex folder ID</b></div><input class="input" id="cfgFolder" value="${esc(llm.folderId)}"></div>`:""}
+  if(state.modal==="settings"){const api=llm.mode==="api";
+    root.innerHTML=`<div class="overlay" data-action="close-modal"><div class="modal" data-stop="1"><h2>Движок NeuraAI</h2>
+      <div class="msub">NeuraAI работает на собственном движке <b>NeuraCore</b> — без подключений и ключей, прямо в браузере. При желании можно включить расширенный режим по ключу доступа.</div>
+      <div class="seg" style="margin-bottom:4px">
+        <button class="segbtn ${!api?"on":""}" data-action="set-mode" data-val="local">NeuraCore (по умолчанию)</button>
+        <button class="segbtn ${api?"on":""}" data-action="set-mode" data-val="api">Расширенный режим</button>
+      </div>
+      ${api?`<div class="field"><div class="flabel"><b>Ключ доступа</b><small>для расширенного режима</small></div><input class="input" id="cfgKey" value="${esc(llm.apiKey)}" placeholder="вставьте ключ"></div>`:`<div class="authnote" style="margin-top:12px;text-align:left">Локальный движок отвечает мгновенно и полностью автономно.</div>`}
       <div class="nav"><button class="btn gold full" data-action="save-cfg">Сохранить</button></div></div></div>`;return;}
   if(state.modal==="auth"){const ed=state.authEdit&&state.profile;const nm=ed?state.profile.name:"";const em=ed?(state.profile.email||""):"";
     const initial=(nm.trim()[0]||"").toUpperCase();
@@ -860,10 +971,14 @@ async function run(){
   state.sub="loading";state.error="";render();
   let i=0;const timer=setInterval(()=>{i=(i+1)%LOAD_STEPS.length;const el=$("loadt");if(el)el.textContent=LOAD_STEPS[i];},1500);
   try{
-    const prompt=t.build(state.form);
-    const raw=await callLLM(prompt,t.id==="cards");
-    if(t.render==="cards")state.result=parseConcept(raw);
-    else state.resultText=raw.trim();
+    if(llm.mode==="api"){
+      const raw=await apiText(t.build(state.form),t.id==="cards");
+      if(t.render==="cards")state.result=parseConcept(raw);else state.resultText=raw.trim();
+    }else{
+      await delay(500+Math.random()*500);
+      const out=NEURA.tool(t,state.form);
+      if(t.render==="cards")state.result=out;else state.resultText=String(out).trim();
+    }
     state.sub="results";render();scrollTop();
   }catch(e){state.sub="form";state.error=e.message||"Не удалось сгенерировать";render();}
   finally{clearInterval(timer);}
@@ -907,13 +1022,13 @@ document.addEventListener("click",(e)=>{
     case "copy":navigator.clipboard&&navigator.clipboard.writeText(state.resultText);t.textContent="Скопировано ✓";setTimeout(()=>{t.textContent="Скопировать";},1500);break;
     case "download":{const blob=new Blob([state.resultText],{type:"text/plain;charset=utf-8"});const u=URL.createObjectURL(blob);const link=document.createElement("a");link.href=u;link.download="neura-result.txt";link.click();URL.revokeObjectURL(u);break;}
     case "logout":state.profile=null;save("neura_profile",null);state.view="chat";render();break;
-    case "save-cfg":{llm.provider=$("cfgProvider").value;llm.apiKey=$("cfgKey").value.trim();if($("cfgFolder"))llm.folderId=$("cfgFolder").value.trim();state.modal=null;renderModal();break;}
+    case "set-mode":llm.mode=v;saveLlm();renderModal();break;
+    case "save-cfg":{const k=$("cfgKey");if(k)llm.apiKey=k.value.trim();saveLlm();state.modal=null;renderModal();break;}
   }
 });
 document.addEventListener("input",(e)=>{const el=e.target;
   if(el.dataset&&el.dataset.field){state.form[el.dataset.field]=el.value;if(el.classList.contains("area"))grow(el);}
   if(el.dataset&&el.dataset.fieldsel){state.form[el.dataset.fieldsel]=el.value;}
-  if(el.id==="cfgProvider"){llm.provider=el.value;renderModal();}
   if(el.id==="chatInput"){grow2(el);}
   if(el.id==="authName"){const av=$("authAva");if(av){const ch=(el.value.trim()[0]||"").toUpperCase();av.innerHTML=ch||svg("user");av.style.transform="scale(1.06)";setTimeout(()=>{if(av)av.style.transform="";},160);}}});
 document.addEventListener("keydown",(e)=>{
