@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
-<title>NeuraAI — ИИ-комплекс для бизнеса и маркетплейсов</title>
+<title>NeuraAI — комплекс для бизнеса и маркетплейсов</title>
 <meta name="theme-color" content="#0E0C11" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -220,6 +220,33 @@ select.input option{background:#1A171B;}
 .sendbtn:hover{filter:brightness(1.05);}
 .sendbtn:active{transform:scale(.9);}
 
+/* cabinet + auth */
+.loginbtn{border:1px solid var(--gold-soft);background:rgba(219,184,122,.08);color:var(--gold);border-radius:11px;padding:8px 16px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;}
+.loginbtn:hover{background:var(--grad-gold);color:#241803;border-color:transparent;}
+.loginbtn:active{transform:scale(.96);}
+.profilecard{display:flex;align-items:center;gap:16px;margin:16px 0 6px;}
+.bigava{width:64px;height:64px;border-radius:18px;flex:none;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:600;font-size:30px;color:#241803;background:linear-gradient(165deg,#F2D49B,#D6AC64);box-shadow:0 10px 26px -8px rgba(207,168,98,.5);}
+.pname{font-family:'Fraunces',serif;font-size:26px;font-weight:600;letter-spacing:-.01em;margin-top:3px;}
+.pmail{color:var(--soft);font-size:13.5px;margin-top:2px;}
+.chatlist{display:flex;flex-direction:column;gap:10px;}
+.chatrow{display:flex;align-items:center;gap:13px;border:1px solid var(--line);border-radius:14px;padding:13px 14px;background:linear-gradient(180deg,var(--panel),#151218);cursor:pointer;transition:border-color .15s,transform .08s;}
+.chatrow:hover{border-color:var(--gold-soft);}
+.chatrow:active{transform:scale(.99);}
+.chatrow .ci{width:38px;height:38px;border-radius:11px;flex:none;display:flex;align-items:center;justify-content:center;background:rgba(219,184,122,.1);border:1px solid var(--line2);color:var(--gold);}
+.chatrow .ci svg{width:19px;height:19px;}
+.chatrow .cc{flex:1;min-width:0;}
+.chatrow .ct2{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.chatrow .cd{color:var(--faint);font-size:12px;margin-top:2px;}
+.delx{flex:none;width:30px;height:30px;border-radius:9px;border:1px solid transparent;background:transparent;color:var(--faint);font-size:20px;line-height:1;cursor:pointer;transition:all .15s;}
+.delx:hover{color:var(--err);border-color:#5A3A33;background:rgba(120,60,48,.12);}
+.emptyhist{color:var(--soft);font-size:13.5px;border:1px dashed var(--line2);border-radius:14px;padding:20px;text-align:center;line-height:1.5;}
+.authmodal{text-align:center;}
+.authava{width:74px;height:74px;border-radius:21px;margin:2px auto 14px;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:600;font-size:33px;color:#241803;background:linear-gradient(165deg,#F2D49B,#D6AC64);box-shadow:0 12px 30px -10px rgba(207,168,98,.6);transition:transform .25s cubic-bezier(.3,1.4,.5,1);}
+.authava svg{width:30px;height:30px;color:#241803;}
+.authmodal .field{text-align:left;margin-top:12px;}
+.authmodal .input{text-align:center;font-size:16px;}
+.authnote{margin-top:16px;color:var(--faint);font-size:12px;line-height:1.5;}
+
 /* modal */
 .overlay{position:fixed;inset:0;z-index:40;background:rgba(8,7,9,.72);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;}
 @media(min-width:560px){.overlay{align-items:center;padding:16px;}}
@@ -231,12 +258,182 @@ select.input option{background:#1A171B;}
 .price{font-family:'Fraunces',serif;font-size:15px;color:var(--gold);margin:2px 0 14px;}
 .foot{text-align:center;color:var(--faint);font-size:11.5px;margin-top:30px;line-height:1.6;}
 @media(prefers-reduced-motion:reduce){.spin{animation:none;}.fade,.modal{animation:none;}.btn:active,.segbtn:active,.smallbtn:active{transform:none;}.btn::after{display:none;}.tool:hover{transform:none;}}
+/* ═══ СВЕТЛАЯ СТЕКЛЯННАЯ ТЕМА (bloom + glass) ═══ */
+:root{
+  --bg:#E7EAF6; --ink:#1B2133; --soft:#5A6177; --faint:#969CB0;
+  --line:rgba(27,33,51,.10); --line2:rgba(27,33,51,.16);
+  --glass:rgba(255,255,255,.50); --glass2:rgba(255,255,255,.72);
+  --acc:#6D5EF7; --acc2:#A45BE8; --grad:linear-gradient(135deg,#7B6BFF,#A659E6);
+  --accsoft:rgba(109,94,247,.12); --ok:#179f6b; --err:#d8506b;
+  --shadow:0 14px 40px -14px rgba(31,38,80,.26); --navh:62px;
+}
+body{background:var(--bg);color:var(--ink);}
+body::before{content:"";position:fixed;inset:-30%;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(34% 30% at 18% 12%, rgba(167,139,250,.7), transparent 60%),
+    radial-gradient(32% 28% at 84% 8%, rgba(255,165,205,.62), transparent 60%);
+  filter:blur(36px) saturate(1.25);animation:bloomA 24s ease-in-out infinite alternate;}
+body::after{content:"";display:block;position:fixed;inset:-30%;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(40% 36% at 82% 84%, rgba(110,190,255,.62), transparent 60%),
+    radial-gradient(38% 34% at 10% 88%, rgba(150,232,205,.6), transparent 60%);
+  filter:blur(40px) saturate(1.25);animation:bloomB 30s ease-in-out infinite alternate;}
+@keyframes bloomA{0%{transform:translate(0,0) scale(1) rotate(0deg)}100%{transform:translate(4%,5%) scale(1.15) rotate(10deg)}}
+@keyframes bloomB{0%{transform:translate(0,0) scale(1.08) rotate(0deg)}100%{transform:translate(-5%,-4%) scale(1.2) rotate(-12deg)}}
+
+.topbar{background:rgba(255,255,255,.55);backdrop-filter:blur(20px) saturate(1.6);-webkit-backdrop-filter:blur(20px) saturate(1.6);border-bottom:1px solid var(--line);}
+.brand{color:var(--ink);}.brand i{color:var(--acc);}
+.brand .nub{background:var(--grad);box-shadow:0 0 12px rgba(124,107,255,.7);}
+.iconbtn{border:1px solid var(--line2);color:var(--soft);background:var(--glass);}
+.iconbtn:hover{color:var(--acc);border-color:var(--acc);}
+.loginbtn{border:1px solid var(--acc);background:var(--accsoft);color:var(--acc);}
+.loginbtn:hover{background:var(--grad);color:#fff;border-color:transparent;}
+.avatar{border:none;background:var(--grad);color:#fff;}
+.topbar:empty,.tabbar:empty{display:none;}
+
+.tabbar{background:rgba(255,255,255,.6);backdrop-filter:blur(20px) saturate(1.6);-webkit-backdrop-filter:blur(20px) saturate(1.6);border-top:1px solid var(--line);}
+.tab{color:var(--faint);}.tab:hover{color:var(--soft);}
+.tab.on{color:#fff;background:var(--grad);box-shadow:0 8px 20px -6px rgba(109,94,247,.45);}
+
+.eyebrow{color:var(--acc);}.rule-top{background:var(--grad);}
+.h1{color:var(--ink);}.h1 i{color:var(--acc);}.lede{color:var(--soft);}
+
+.cat{border:1px solid var(--line2);background:var(--glass);color:var(--soft);}
+.cat:hover{border-color:var(--acc);color:var(--ink);}
+.cat.on{border-color:transparent;color:#fff;background:var(--grad);}
+
+.panel,.tool,.concept,.slide,.result,.cab-stats .stat,.chatrow,.stat{
+  background:var(--glass);backdrop-filter:blur(16px) saturate(1.5);-webkit-backdrop-filter:blur(16px) saturate(1.5);
+  border:1px solid var(--line);box-shadow:var(--shadow);}
+.tool .ico,.toolhead .ico,.dropicon,.chatrow .ci{background:var(--accsoft);border:1px solid var(--line2);color:var(--acc);}
+.tool h3,.toolhead h2{color:var(--ink);}.tool p,.toolhead p{color:var(--soft);}.tool .ct{color:var(--faint);}
+.back{color:var(--soft);}.back:hover{color:var(--acc);}
+
+.flabel b{color:var(--ink);}.flabel small{color:var(--faint);}
+.input,.area,select.input,.chat-input{color:var(--ink);}
+.input,.area,select.input{background:rgba(255,255,255,.7);border:1px solid var(--line2);}
+.input::placeholder,.area::placeholder,.chat-input::placeholder{color:var(--faint);}
+.input:focus,.area:focus,select.input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--accsoft);}
+select.input option{background:#fff;color:var(--ink);}
+
+.seg .segbtn{background:rgba(255,255,255,.55);border:1px solid var(--line2);color:var(--soft);}
+.segbtn:hover{border-color:var(--acc);color:var(--ink);}
+.segbtn.on{border-color:transparent;color:#fff;background:var(--grad);box-shadow:0 6px 16px -5px rgba(109,94,247,.45);}
+.drop{border:1.5px dashed var(--line2);background:rgba(255,255,255,.5);}
+.drop:hover{border-color:var(--acc);}
+.droptext b{color:var(--ink);}.droptext span{color:var(--faint);}.xbtn{border:1px solid var(--line2);color:var(--acc);}
+.thumb{border:1px solid var(--line2);}
+
+.btn.gold{background:var(--grad);color:#fff;box-shadow:0 12px 28px -8px rgba(109,94,247,.5),inset 0 1px 0 rgba(255,255,255,.35);}
+.btn.gold:active{box-shadow:0 6px 16px -8px rgba(109,94,247,.5);}
+.btn.ghost{border:1px solid var(--line2);background:rgba(255,255,255,.55);color:var(--ink);}
+.btn.ghost:hover{border-color:var(--acc);color:var(--acc);}
+.note.err{border:1px solid rgba(216,80,107,.4);background:rgba(216,80,107,.1);color:#b23a54;}
+.note.ok{border:1px solid rgba(23,159,107,.4);background:rgba(23,159,107,.1);color:#0f7a51;}
+.spin{border:2px solid var(--line2);border-top-color:var(--acc);}.load-t{color:var(--soft);}
+
+.result .eyebrow,.concept .eyebrow{color:var(--acc);}
+.result p,.result li{color:var(--ink);}.result b,.bubble b{color:var(--ink);font-weight:600;}
+.smallbtn{border:1px solid var(--line2);background:rgba(255,255,255,.55);color:var(--soft);}
+.smallbtn:hover{color:var(--acc);border-color:var(--acc);}
+.concept{background:linear-gradient(160deg,rgba(124,107,255,.14),rgba(255,255,255,.55));}
+.concept p{color:var(--ink);}
+.sectionlabel h2{color:var(--ink);}.srule{background:var(--line);}
+.idea{border-bottom:1px solid var(--line);}.idea .n{color:var(--acc);}.idea .role{color:var(--ink);}.idea .msg{color:var(--soft);}
+.frame{background:rgba(255,255,255,.6);border:1px solid var(--line2);}
+.corner{border-color:var(--acc);}
+.frame .bg{background:radial-gradient(80% 60% at 50% 35%,rgba(124,107,255,.14),rgba(255,255,255,.2));color:var(--faint);}
+.zone{background:rgba(255,255,255,.78);border:1px solid var(--line2);color:var(--ink);}
+.zone.accent{border-color:var(--acc);color:var(--acc);background:var(--accsoft);}
+.slide-h .nn{color:var(--acc);}.slide-h .role{color:var(--ink);}.goal,.sub{color:var(--soft);}.headline{color:var(--ink);}
+.mlabel{color:var(--faint);}.mtext{color:var(--ink);}
+.chip{background:rgba(255,255,255,.6);border:1px solid var(--line2);color:var(--ink);}
+.chip.acc{background:var(--accsoft);border-color:var(--acc);color:var(--acc);}
+.sw{color:var(--soft);}.swdot{border:1px solid var(--line2);}
+
+.stat .num{color:var(--acc);}.stat .cap{color:var(--soft);}
+.bigava,.authava{background:var(--grad);color:#fff;box-shadow:0 12px 30px -10px rgba(109,94,247,.55);}
+.authava svg{color:#fff;}
+.pname{color:var(--ink);}.pmail{color:var(--soft);}
+.ct2{color:var(--ink);}.cd{color:var(--faint);}
+.delx:hover{color:var(--err);border-color:rgba(216,80,107,.4);background:rgba(216,80,107,.1);}
+.emptyhist{color:var(--soft);border:1px dashed var(--line2);}
+.authnote{color:var(--faint);}
+
+.overlay{background:rgba(40,42,70,.35);backdrop-filter:blur(6px);}
+.modal{background:var(--glass2);backdrop-filter:blur(26px) saturate(1.6);-webkit-backdrop-filter:blur(26px) saturate(1.6);border:1px solid rgba(255,255,255,.7);box-shadow:0 24px 60px -18px rgba(31,38,80,.35);}
+.modal h2{color:var(--ink);}.msub{color:var(--soft);}
+
+/* chat */
+.newchat{border:1px solid var(--line2);background:rgba(255,255,255,.55);color:var(--soft);}
+.newchat:hover{color:var(--acc);border-color:var(--acc);}
+.msg.a .ava{background:var(--accsoft);border:1px solid var(--line2);color:var(--acc);}
+.msg.u .ava{background:var(--grad);color:#fff;}
+.msg.a .bubble{background:var(--glass2);backdrop-filter:blur(14px) saturate(1.4);-webkit-backdrop-filter:blur(14px) saturate(1.4);border:1px solid var(--line);color:var(--ink);box-shadow:0 6px 18px -10px rgba(31,38,80,.2);}
+.msg.u .bubble{background:var(--grad);border:none;color:#fff;}
+.dots i{background:var(--acc);}
+.empty .big{color:var(--ink);}.empty .sub{color:var(--soft);}
+.sug{border:1px solid var(--line2);background:rgba(255,255,255,.55);color:var(--soft);}
+.sug:hover{border-color:var(--acc);color:var(--ink);}
+
+.composer{bottom:calc(14px + env(safe-area-inset-bottom));padding:0 14px;}
+.composer-in{max-width:760px;align-items:flex-end;gap:8px;background:var(--glass2);backdrop-filter:blur(20px) saturate(1.6);-webkit-backdrop-filter:blur(20px) saturate(1.6);border:1px solid var(--line2);border-radius:24px;padding:7px 7px 7px 18px;box-shadow:var(--shadow);}
+.composer-in:focus-within{border-color:var(--acc);box-shadow:var(--shadow),0 0 0 3px var(--accsoft);}
+.chat-input{font-size:16px;min-height:26px;max-height:140px;padding:9px 0;line-height:1.4;}
+.sendbtn{width:42px;height:42px;border-radius:50%;background:var(--grad);color:#fff;box-shadow:0 6px 16px -4px rgba(109,94,247,.55);}
+.sendbtn svg{width:20px;height:20px;}
+
+.wrap{padding-bottom:calc(28px + env(safe-area-inset-bottom));}
+.chat{padding-bottom:104px;}
+
+/* drawer (боковое меню с чатами) */
+.menubtn{flex:none;}
+.scrim{position:fixed;inset:0;z-index:30;background:rgba(40,42,70,.34);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;visibility:hidden;transition:opacity .28s;}
+.scrim.show{opacity:1;visibility:visible;}
+.drawer{position:fixed;top:0;left:0;bottom:0;z-index:31;width:300px;max-width:85vw;transform:translateX(-104%);transition:transform .32s cubic-bezier(.3,.85,.25,1);
+  background:rgba(255,255,255,.74);backdrop-filter:blur(30px) saturate(1.7);-webkit-backdrop-filter:blur(30px) saturate(1.7);
+  border-right:1px solid rgba(255,255,255,.7);box-shadow:0 0 70px rgba(31,38,80,.28);
+  display:flex;flex-direction:column;padding:calc(16px + env(safe-area-inset-top)) 14px calc(16px + env(safe-area-inset-bottom));}
+.drawer.open{transform:none;}
+.dr-prof{display:flex;align-items:center;gap:12px;padding:6px 6px 14px;border-bottom:1px solid var(--line);cursor:pointer;}
+.dr-prof .av{width:44px;height:44px;border-radius:14px;background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:600;font-size:19px;flex:none;}
+.dr-prof .nm{font-weight:600;font-size:15px;color:var(--ink);}
+.dr-prof .ml{font-size:12px;color:var(--soft);margin-top:1px;}
+.dr-new{margin:14px 0 6px;display:flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:14px;background:var(--grad);color:#fff;font-family:'Fraunces',serif;font-weight:600;font-size:15px;padding:13px;cursor:pointer;box-shadow:0 10px 24px -8px rgba(109,94,247,.5);transition:transform .08s;}
+.dr-new:active{transform:scale(.98);}.dr-new svg{width:18px;height:18px;}
+.dr-lbl{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin:12px 6px 6px;}
+.dr-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:3px;margin:0 -4px;padding:0 4px;-webkit-overflow-scrolling:touch;}
+.dr-chat{display:flex;align-items:center;gap:8px;padding:10px 10px;border-radius:11px;cursor:pointer;transition:background .15s;}
+.dr-chat:hover{background:rgba(109,94,247,.08);}
+.dr-chat.active{background:var(--accsoft);}
+.dr-chat .t{flex:1;min-width:0;font-size:14px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dr-chat .x{flex:none;width:26px;height:26px;border:none;background:none;color:var(--faint);font-size:18px;line-height:1;border-radius:8px;cursor:pointer;}
+.dr-chat .x:hover{color:var(--err);background:rgba(216,80,107,.1);}
+.dr-empty{color:var(--faint);font-size:13px;padding:10px;}
+.dr-foot{border-top:1px solid var(--line);padding-top:8px;margin-top:8px;display:flex;flex-direction:column;gap:1px;}
+.dr-item{display:flex;align-items:center;gap:12px;padding:11px 10px;border-radius:11px;border:none;background:none;color:var(--ink);font:inherit;font-size:14.5px;cursor:pointer;text-align:left;width:100%;}
+.dr-item:hover{background:rgba(109,94,247,.08);color:var(--acc);}
+.dr-item svg{width:19px;height:19px;color:var(--soft);}
+.dr-item:hover svg{color:var(--acc);}
+@media(prefers-reduced-motion:reduce){body::before,body::after{animation:none;}.drawer{transition:none;}}
+
+/* auth screen (gate) */
+.authscreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 16px calc(46px + env(safe-area-inset-bottom));position:relative;z-index:1;}
+.authcard{width:100%;max-width:382px;background:var(--glass2);backdrop-filter:blur(28px) saturate(1.7);-webkit-backdrop-filter:blur(28px) saturate(1.7);border:1px solid rgba(255,255,255,.75);border-radius:28px;padding:32px 24px 26px;box-shadow:0 30px 70px -20px rgba(31,38,80,.4);text-align:center;}
+.brandbig{display:flex;align-items:center;justify-content:center;gap:9px;font-family:'Fraunces',serif;font-weight:600;font-size:21px;color:var(--ink);margin-bottom:18px;}
+.brandbig .nub{width:9px;height:9px;border-radius:50%;background:var(--grad);box-shadow:0 0 12px rgba(124,107,255,.7);}
+.brandbig i{color:var(--acc);}
+.authcard h2{font-family:'Fraunces',serif;font-size:27px;font-weight:600;color:var(--ink);margin:0 0 6px;}
+.authsub{color:var(--soft);font-size:13.5px;line-height:1.55;margin:0 auto 16px;max-width:30ch;}
+.authcard .field{text-align:left;margin-top:12px;}
+.authcard .input{text-align:center;}
 </style>
 </head>
 <body>
 <div class="topbar"><div class="tin" id="topbar"></div></div>
 <div class="wrap" id="app"></div>
-<div class="tabbar" id="tabbar"></div>
+<aside class="drawer" id="drawer"></aside>
+<div class="scrim" id="scrim" data-action="close-drawer"></div>
 <div id="modal-root"></div>
 
 <script>
@@ -281,6 +478,10 @@ const I={
   reply:'<path d="M9 7L4 12l5 5M4 12h11a5 5 0 0 1 5 5v1"/>',
   home:'<path d="M4 11l8-7 8 7M6 10v9h5v-6h2v6h5v-9"/>',
   user:'<circle cx="12" cy="8" r="3.5"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/>',
+  menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  gear:'<circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8"/>',
+  logout:'<path d="M14 5h5v14h-5M14 12H4M7 9l-3 3 3 3"/>',
 };
 const svg=(n)=>`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${I[n]||I.grid}</svg>`;
 
@@ -344,7 +545,7 @@ const LOAD_STEPS=["Анализирую запрос…","Подбираю фо�
 const state={
   view:"chat", cat:"Все", toolId:null, sub:"form",
   form:{}, photo:null, error:"", result:null, resultText:"", modal:null,
-  chats:[], currentId:null, typing:false, _rev:null,
+  chats:[], currentId:null, typing:false, _rev:null, drawer:false,
   profile:load("neura_profile",null),
 };
 /* инициализация чатов (с переносом старого одиночного чата) */
@@ -443,7 +644,7 @@ function msgHTML(m,isLast){
   const inner=m.role==="user"?esc(m.content).replace(/\n/g,"<br>"):`<span ${isLast?'id="liveMsg"':""}>${mdLite(m.content)}</span>`;
   return `<div class="msg ${cls}"><div class="ava">${ava}</div><div class="bubble">${inner}</div></div>`;
 }
-function composer(){return `<div class="composer"><div class="composer-in"><textarea id="chatInput" class="chat-input" rows="1" placeholder="Спросите NeuraAI…"></textarea><button class="sendbtn" data-action="send-chat" title="Отправить">↑</button></div></div>`;}
+function composer(){return `<div class="composer"><div class="composer-in"><textarea id="chatInput" class="chat-input" rows="1" placeholder="Спросите NeuraAI…"></textarea><button class="sendbtn" data-action="send-chat" title="Отправить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6M6 12l6-6 6 6"/></svg></button></div></div>`;}
 function viewChat(){
   const c=currentChat();const msgsArr=c?c.messages:[];const has=msgsArr.length>0;
   const head=`<button class="newchat" data-action="new-chat">+ Новый чат</button>`;
@@ -473,7 +674,30 @@ function mdLite(t){
 }
 
 /* ── render ── */
-function render(){renderTopbar();renderTabbar();const app=$("app");
+function viewAuthScreen(){
+  return `<div class="authscreen"><div class="authcard fade">
+    <div class="brandbig"><span class="nub"></span>Neura<i>AI</i></div>
+    <div class="authava" id="authAva">${svg("user")}</div>
+    <h2>Добро пожаловать</h2>
+    <p class="authsub">Представьтесь — и NeuraAI будет обращаться к вам по имени. Профиль хранится только в этом браузере.</p>
+    <div class="field"><input class="input" id="authName" placeholder="Ваше имя" autocomplete="given-name"></div>
+    <div class="field"><input class="input" id="authEmail" type="email" placeholder="E-mail (необязательно)"></div>
+    <div id="authErr"></div>
+    <button class="btn gold full" data-action="save-auth" style="margin-top:16px">Войти в NeuraAI</button>
+    <div class="authnote">🔒 Без пароля и серверов — всё локально в этом браузере.</div>
+  </div></div>`;
+}
+function render(){
+  if(!state.profile){
+    document.body.classList.add("unauth");state.drawer=false;
+    $("topbar").innerHTML="";
+    $("drawer").className="drawer";$("drawer").innerHTML="";$("scrim").className="scrim";
+    $("app").innerHTML=viewAuthScreen();renderModal();
+    const a=$("authName");if(a)a.focus();
+    return;
+  }
+  document.body.classList.remove("unauth");
+  renderTopbar();renderDrawer();const app=$("app");
   if(state.view==="chat")app.innerHTML=viewChat();
   else if(state.view==="tools")app.innerHTML=viewHome();
   else if(state.view==="tool")app.innerHTML=viewTool();
@@ -484,29 +708,44 @@ function render(){renderTopbar();renderTabbar();const app=$("app");
 }
 function renderTopbar(){
   const p=state.profile;
-  const right=`${p?`<div class="avatar" data-action="nav-cabinet" title="${esc(p.email||p.name)}">${esc((p.name||"?")[0].toUpperCase())}</div>`
-    :`<button class="loginbtn" data-action="open-auth">Войти</button>`}
-    <button class="iconbtn" data-action="open-settings" title="Настройки ИИ">⚙</button>`;
-  $("topbar").innerHTML=`<div class="brand" data-action="nav-chat"><span class="nub"></span>Neura<i>AI</i></div><div class="sp"></div>${right}`;
+  $("topbar").innerHTML=`
+    <button class="iconbtn menubtn" data-action="toggle-drawer" title="Меню">${svg("menu")}</button>
+    <div class="brand" data-action="nav-chat"><span class="nub"></span>Neura<i>AI</i></div>
+    <div class="sp"></div>
+    <button class="iconbtn" data-action="new-chat" title="Новый чат">${svg("plus")}</button>
+    ${p?`<div class="avatar" data-action="go-cabinet" title="${esc(p.email||p.name)}">${esc((p.name||"?")[0].toUpperCase())}</div>`:""}`;
 }
-function renderTabbar(){
-  const v=state.view;
-  $("tabbar").innerHTML=`<div class="tabbar-in">
-    <button class="tab ${v==="chat"?"on":""}" data-action="nav-chat">${svg("chat")}<span>Чат</span></button>
-    <button class="tab ${(v==="tools"||v==="tool")?"on":""}" data-action="nav-tools">${svg("grid")}<span>Инструменты</span></button>
-    <button class="tab ${v==="cabinet"?"on":""}" data-action="nav-cabinet">${svg("user")}<span>Кабинет</span></button>
-  </div>`;
+function renderDrawer(){
+  const p=state.profile||{name:"Гость"};
+  const chats=state.chats.slice().sort((a,b)=>b.updated-a.updated);
+  const list=chats.length
+    ? chats.map((c)=>`<div class="dr-chat ${c.id===state.currentId?"active":""}" data-action="open-chat" data-val="${c.id}"><span class="t">${esc(c.title)}</span><button class="x" data-action="delete-chat" data-val="${c.id}" title="Удалить">×</button></div>`).join("")
+    : `<div class="dr-empty">Чатов пока нет. Нажмите «Новый чат».</div>`;
+  $("drawer").className="drawer"+(state.drawer?" open":"");
+  $("scrim").className="scrim"+(state.drawer?" show":"");
+  $("drawer").innerHTML=`
+    <div class="dr-prof" data-action="go-cabinet"><div class="av">${esc((p.name||"?")[0].toUpperCase())}</div>
+      <div><div class="nm">${esc(p.name||"Гость")}</div><div class="ml">${p.email?esc(p.email):"Личный кабинет"}</div></div></div>
+    <button class="dr-new" data-action="new-chat">${svg("plus")} Новый чат</button>
+    <div class="dr-lbl">История чатов</div>
+    <div class="dr-list">${list}</div>
+    <div class="dr-foot">
+      <button class="dr-item" data-action="go-tools">${svg("grid")} Инструменты</button>
+      <button class="dr-item" data-action="go-cabinet">${svg("user")} Личный кабинет</button>
+      <button class="dr-item" data-action="open-settings">${svg("gear")} Настройки ИИ</button>
+      <button class="dr-item" data-action="logout">${svg("logout")} Выйти</button>
+    </div>`;
 }
 function viewHome(){
   const tools=TOOLS.filter((t)=>state.cat==="Все"||t.cat===state.cat);
   return `<div class="hero"><div class="rule-top"></div>
-    <div class="eyebrow">ИИ-комплекс для бизнеса · ${esc(CONFIG.brand)}</div>
-    <h1 class="h1">Один ИИ —<br><i>десятки задач</i></h1>
-    <p class="lede">Карточки для маркетплейсов, описания, посты, письма, ответы на отзывы, перевод, идеи и свободные запросы. Первые ${CONFIG.freeLimit} генераций — бесплатно для всех.</p></div>
+    <div class="eyebrow">Инструменты · ${esc(CONFIG.brand)}</div>
+    <h1 class="h1">Думает, пишет,<br><i>создаёт</i></h1>
+    <p class="lede">Готовые ИИ-инструменты для бизнеса и маркетплейсов: карточки товара, описания, посты, письма, ответы на отзывы, перевод и идеи. Выберите задачу — остальное сделает NeuraAI.</p></div>
     <div class="cats">${CATS.map((c)=>`<div class="cat ${state.cat===c?"on":""}" data-action="set-cat" data-val="${c}">${c}</div>`).join("")}</div>
     <div class="grid">${tools.map((t)=>`<div class="tool" data-action="open-tool" data-val="${t.id}">
       <div class="ct">${t.cat}</div><div class="ico">${svg(t.icon)}</div><h3>${t.title}</h3><p>${t.desc}</p></div>`).join("")}</div>
-    <div class="foot">${esc(CONFIG.brand)} — статическая версия. Генерации хранятся в этом браузере.<br>Оплата — через Telegram, доступ открывается кодом активации.</div>`;
+    <div class="foot">${esc(CONFIG.brand)} — ваш ИИ-ассистент для бизнеса.</div>`;
 }
 function fieldHTML(fl){
   const v=state.form[fl.key];
@@ -645,17 +884,19 @@ document.addEventListener("click",(e)=>{
   const a=t.dataset.action,v=t.dataset.val;
   if(a==="close-modal"){if(e.target.classList.contains("overlay")){state.modal=null;state.authEdit=false;renderModal();}return;}
   switch(a){
-    case "nav-chat":state.view="chat";render();break;
-    case "nav-tools":case "nav-home":state.view="tools";render();scrollTop();break;
-    case "nav-cabinet":state.view="cabinet";render();scrollTop();break;
-    case "new-chat":newChat();state.view="chat";render();break;
+    case "toggle-drawer":state.drawer=!state.drawer;renderDrawer();break;
+    case "close-drawer":state.drawer=false;renderDrawer();break;
+    case "nav-chat":state.drawer=false;state.view="chat";render();break;
+    case "go-tools":case "nav-tools":case "nav-home":state.drawer=false;state.view="tools";render();scrollTop();break;
+    case "go-cabinet":case "nav-cabinet":state.drawer=false;state.view="cabinet";render();scrollTop();break;
+    case "new-chat":newChat();state.drawer=false;state.view="chat";render();break;
     case "send-chat":{const ci=$("chatInput");if(ci){const val=ci.value;ci.value="";sendChat(val);}break;}
     case "suggest":sendChat(v);break;
-    case "open-chat":clearInterval(state._rev);state.currentId=v;saveChats();state.view="chat";render();break;
+    case "open-chat":clearInterval(state._rev);state.currentId=v;saveChats();state.drawer=false;state.view="chat";render();break;
     case "delete-chat":{e.stopPropagation();state.chats=state.chats.filter((c)=>c.id!==v);if(state.currentId===v)state.currentId=state.chats[0]?state.chats[0].id:null;saveChats();render();break;}
     case "set-cat":state.cat=v;render();break;
     case "open-tool":openTool(v);break;
-    case "open-settings":state.modal="settings";renderModal();break;
+    case "open-settings":state.drawer=false;state.modal="settings";render();break;
     case "open-auth":openAuth(false);break;
     case "edit-profile":openAuth(true);break;
     case "save-auth":saveAuth();break;
@@ -673,9 +914,21 @@ document.addEventListener("input",(e)=>{const el=e.target;
   if(el.dataset&&el.dataset.field){state.form[el.dataset.field]=el.value;if(el.classList.contains("area"))grow(el);}
   if(el.dataset&&el.dataset.fieldsel){state.form[el.dataset.fieldsel]=el.value;}
   if(el.id==="cfgProvider"){llm.provider=el.value;renderModal();}
-  if(el.id==="chatInput"){grow2(el);}});
+  if(el.id==="chatInput"){grow2(el);}
+  if(el.id==="authName"){const av=$("authAva");if(av){const ch=(el.value.trim()[0]||"").toUpperCase();av.innerHTML=ch||svg("user");av.style.transform="scale(1.06)";setTimeout(()=>{if(av)av.style.transform="";},160);}}});
 document.addEventListener("keydown",(e)=>{
-  if(e.target&&e.target.id==="chatInput"&&e.key==="Enter"&&!e.shiftKey){e.preventDefault();const val=e.target.value;e.target.value="";sendChat(val);}});
+  if(e.target&&e.target.id==="chatInput"&&e.key==="Enter"&&!e.shiftKey){e.preventDefault();const val=e.target.value;e.target.value="";sendChat(val);}
+  if(e.target&&(e.target.id==="authName"||e.target.id==="authEmail")&&e.key==="Enter"){e.preventDefault();saveAuth();}});
+/* свайп для бокового меню */
+let _tsx=0,_tsy=0,_tracking=false;
+document.addEventListener("touchstart",(e)=>{const t=e.touches[0];_tsx=t.clientX;_tsy=t.clientY;_tracking=true;},{passive:true});
+document.addEventListener("touchend",(e)=>{
+  if(!_tracking||!state.profile){_tracking=false;return;}_tracking=false;
+  const t=e.changedTouches[0];const dx=t.clientX-_tsx,dy=t.clientY-_tsy;
+  if(Math.abs(dx)<55||Math.abs(dy)>45)return;
+  if(dx>0&&_tsx<44&&!state.drawer){state.drawer=true;renderDrawer();}
+  else if(dx<0&&state.drawer){state.drawer=false;renderDrawer();}
+},{passive:true});
 document.addEventListener("change",(e)=>{if(e.target.id==="fileInput"){const file=e.target.files&&e.target.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{const url=r.result;state.photo={url,b64:String(url).split(",")[1],mime:file.type||"image/jpeg"};render();};r.readAsDataURL(file);}});
 
 render();
