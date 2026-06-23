@@ -501,8 +501,26 @@ async function apiChat(history){
   if(!r.ok)throw new Error("cloud "+r.status);
   return orParse(await r.json());
 }
+/* запасной онлайн-канал (работает в т.ч. в песочнице предпросмотра) */
+const ANTH_URL="https://api.anthropic.com/v1/messages";
+const ANTH_HDR={"content-type":"application/json","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"};
+async function anthChat(history){
+  const r=await fetch(ANTH_URL,{method:"POST",headers:ANTH_HDR,body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1500,system:SYSTEM,messages:history.map((m)=>({role:m.role,content:m.content}))})});
+  if(!r.ok)throw new Error("c2 "+r.status);
+  const d=await r.json();return (d.content||[]).map((x)=>x.text||"").join("\n");
+}
+async function anthText(prompt,withPhoto){
+  let content=prompt;
+  if(withPhoto&&state.photo&&state.photo.b64)content=[{type:"image",source:{type:"base64",media_type:state.photo.mime,data:state.photo.b64}},{type:"text",text:prompt}];
+  const r=await fetch(ANTH_URL,{method:"POST",headers:ANTH_HDR,body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:4000,system:SYSTEM,messages:[{role:"user",content}]})});
+  if(!r.ok)throw new Error("c2 "+r.status);
+  const d=await r.json();return (d.content||[]).map((x)=>x.text||"").join("\n");
+}
 async function chatLLM(history){
-  if(llm.mode!=="local"&&llm.apiKey){try{const out=await apiChat(history);if(out&&out.trim())return out;}catch(e){}}
+  if(llm.mode!=="local"){
+    if(llm.apiKey){try{const o=await apiChat(history);if(o&&o.trim())return o;}catch(e){}}
+    try{const a=await anthChat(history);if(a&&a.trim())return a;}catch(e){}
+  }
   await delay(420+Math.random()*460);return NEURA.respond(history);
 }
 
@@ -709,10 +727,11 @@ async function run(){
   let i=0;const timer=setInterval(()=>{i=(i+1)%LOAD_STEPS.length;const el=$("loadt");if(el)el.textContent=LOAD_STEPS[i];},1500);
   try{
     let done=false;
-    if(llm.mode!=="local"&&llm.apiKey){
-      try{const raw=await apiText(t.build(state.form),t.id==="cards");
-        if(t.render==="cards")state.result=parseConcept(raw);else state.resultText=raw.trim();done=true;}
-      catch(e){done=false;}
+    if(llm.mode!=="local"){
+      let raw=null;
+      if(llm.apiKey){try{raw=await apiText(t.build(state.form),t.id==="cards");}catch(e){}}
+      if(raw==null){try{raw=await anthText(t.build(state.form),t.id==="cards");}catch(e){}}
+      if(raw!=null){try{if(t.render==="cards")state.result=parseConcept(raw);else state.resultText=raw.trim();done=true;}catch(e){done=false;}}
     }
     if(!done){await delay(400+Math.random()*400);const out=NEURA.tool(t,state.form);if(t.render==="cards")state.result=out;else state.resultText=String(out).trim();}
     state.sub="results";render();scrollTop();
