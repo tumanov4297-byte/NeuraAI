@@ -283,9 +283,7 @@ select.input option{background:#fff;color:var(--ink);}
 <div id="modal-root"></div>
 <script>
 "use strict";
-/* NeuraAI — собственный движок NeuraCore.
-   Онлайн-движок включён по умолчанию; в интерфейсе это всегда «NeuraCore».
-   Локальный движок — автоматический запасной вариант. */
+/* NeuraAI — онлайн-движок NeuraCore. Только онлайн, без локального режима. */
 const CONFIG={ brand:"NeuraAI", cloudModel:"openai/gpt-4o", cloudKey:"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" };
 
 /* storage: localStorage + запасной вариант в памяти */
@@ -517,11 +515,10 @@ async function anthText(prompt,withPhoto){
   const d=await r.json();return (d.content||[]).map((x)=>x.text||"").join("\n");
 }
 async function chatLLM(history){
-  if(llm.mode!=="local"){
-    if(llm.apiKey){try{const o=await apiChat(history);if(o&&o.trim())return o;}catch(e){}}
-    try{const a=await anthChat(history);if(a&&a.trim())return a;}catch(e){}
-  }
-  await delay(420+Math.random()*460);return NEURA.respond(history);
+  let err="";
+  if(llm.apiKey){try{const o=await apiChat(history);if(o&&o.trim())return o;}catch(e){err=e.message;}}
+  try{const a=await anthChat(history);if(a&&a.trim())return a;}catch(e){err=err||e.message;}
+  throw new Error("Онлайн-движок сейчас недоступен"+(err?(" ["+err+"]"):"")+". Проверьте интернет или ключ.");
 }
 
 /* ── чаты ── */
@@ -700,11 +697,10 @@ function viewCabinet(){
 function renderModal(){
   const root=$("modal-root");
   if(!state.modal){root.innerHTML="";return;}
-  if(state.modal==="settings"){const cloud=llm.mode!=="local";
+  if(state.modal==="settings"){
     root.innerHTML=`<div class="overlay" data-action="close-modal"><div class="modal" data-stop="1"><h2>Движок NeuraAI</h2>
-      <div class="msub">NeuraAI работает на собственном движке <b>NeuraCore</b>. Онлайн-режим — максимально умные ответы; офлайн — быстрые ответы без подключения.</div>
-      <div class="seg"><button class="segbtn ${cloud?"on":""}" data-action="set-mode" data-val="cloud">NeuraCore (онлайн)</button><button class="segbtn ${!cloud?"on":""}" data-action="set-mode" data-val="local">NeuraCore Lite (офлайн)</button></div>
-      ${cloud?`<div class="field"><div class="flabel"><b>Ключ доступа</b><small>уже подключён</small></div><input class="input" id="cfgKey" value="${esc(llm.apiKey)}" placeholder="ключ NeuraCore"></div>`:`<div class="authnote" style="text-align:left">Офлайн-движок отвечает мгновенно и полностью автономно.</div>`}
+      <div class="msub">NeuraAI работает на собственном онлайн-движке <b>NeuraCore</b>. Здесь можно обновить ключ доступа.</div>
+      <div class="field"><div class="flabel"><b>Ключ доступа NeuraCore</b></div><input class="input" id="cfgKey" value="${esc(llm.apiKey)}" placeholder="ключ NeuraCore"></div>
       <div class="nav"><button class="btn gold full" data-action="save-cfg">Сохранить</button></div></div></div>`;return;}
   if(state.modal==="auth"){const ed=state.authEdit&&state.profile;const nm=ed?state.profile.name:"";const em=ed?(state.profile.email||""):"";const ini=(nm.trim()[0]||"").toUpperCase();
     root.innerHTML=`<div class="overlay" data-action="close-modal"><div class="modal authmodal" data-stop="1">
@@ -726,14 +722,11 @@ async function run(){
   state.sub="loading";state.error="";render();
   let i=0;const timer=setInterval(()=>{i=(i+1)%LOAD_STEPS.length;const el=$("loadt");if(el)el.textContent=LOAD_STEPS[i];},1500);
   try{
-    let done=false;
-    if(llm.mode!=="local"){
-      let raw=null;
-      if(llm.apiKey){try{raw=await apiText(t.build(state.form),t.id==="cards");}catch(e){}}
-      if(raw==null){try{raw=await anthText(t.build(state.form),t.id==="cards");}catch(e){}}
-      if(raw!=null){try{if(t.render==="cards")state.result=parseConcept(raw);else state.resultText=raw.trim();done=true;}catch(e){done=false;}}
-    }
-    if(!done){await delay(400+Math.random()*400);const out=NEURA.tool(t,state.form);if(t.render==="cards")state.result=out;else state.resultText=String(out).trim();}
+    let raw=null,err="";
+    if(llm.apiKey){try{raw=await apiText(t.build(state.form),t.id==="cards");}catch(e){err=e.message;}}
+    if(raw==null){try{raw=await anthText(t.build(state.form),t.id==="cards");}catch(e){err=err||e.message;}}
+    if(raw==null)throw new Error("Онлайн-движок сейчас недоступен"+(err?(" ["+err+"]"):"")+".");
+    if(t.render==="cards")state.result=parseConcept(raw);else state.resultText=raw.trim();
     state.sub="results";render();scrollTop();
   }catch(e){state.sub="form";state.error=e.message||"Не удалось сгенерировать";render();}
   finally{clearInterval(timer);}
