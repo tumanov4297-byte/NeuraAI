@@ -285,7 +285,7 @@ select.input option{background:#fff;color:var(--ink);}
 "use strict";
 /* NeuraAI — онлайн-движок NeuraCore. Перебирает модели и берёт первую рабочую. */
 const CONFIG={ brand:"NeuraAI", cloudKey:"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",
-  cloudModels:["openai/gpt-4o","google/gemini-2.0-flash-exp:free","meta-llama/llama-3.3-70b-instruct:free","qwen/qwen-2.5-72b-instruct:free"] };
+  cloudModels:["openai/gpt-4o","openrouter/free","meta-llama/llama-3.3-70b-instruct:free"] };
 
 /* storage: localStorage + запасной вариант в памяти */
 const store=(()=>{let mem={},ok=true;try{localStorage.setItem("__t","1");localStorage.removeItem("__t");}catch(e){ok=false;}
