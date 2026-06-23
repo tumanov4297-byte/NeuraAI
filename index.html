@@ -283,8 +283,9 @@ select.input option{background:#fff;color:var(--ink);}
 <div id="modal-root"></div>
 <script>
 "use strict";
-/* NeuraAI — онлайн-движок NeuraCore. Только онлайн, без локального режима. */
-const CONFIG={ brand:"NeuraAI", cloudModel:"openai/gpt-4o", cloudKey:"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" };
+/* NeuraAI — онлайн-движок NeuraCore. Перебирает модели и берёт первую рабочую. */
+const CONFIG={ brand:"NeuraAI", cloudKey:"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",
+  cloudModels:["openai/gpt-4o","google/gemini-2.0-flash-exp:free","meta-llama/llama-3.3-70b-instruct:free","qwen/qwen-2.5-72b-instruct:free"] };
 
 /* storage: localStorage + запасной вариант в памяти */
 const store=(()=>{let mem={},ok=true;try{localStorage.setItem("__t","1");localStorage.removeItem("__t");}catch(e){ok=false;}
@@ -486,18 +487,25 @@ const OR_URL="https://openrouter.ai/api/v1/chat/completions";
 function orHeaders(){const ref=(typeof location!=="undefined"&&location.origin&&location.origin!=="null")?location.origin:"https://neuraai.app";
   return {Authorization:"Bearer "+llm.apiKey,"Content-Type":"application/json","HTTP-Referer":ref,"X-Title":"NeuraAI"};}
 function orParse(d){return (d&&d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content)||"";}
+async function orCall(messages){
+  let lastErr="";
+  for(const model of CONFIG.cloudModels){
+    try{
+      const r=await fetch(OR_URL,{method:"POST",headers:orHeaders(),body:JSON.stringify({model,messages})});
+      if(!r.ok){lastErr="cloud "+r.status;continue;}
+      const txt=orParse(await r.json());
+      if(txt&&txt.trim())return txt;
+    }catch(e){lastErr=e.message||"network";}
+  }
+  throw new Error(lastErr||"cloud");
+}
 async function apiText(prompt,withPhoto){
   let user=prompt;
   if(withPhoto&&state.photo&&state.photo.url)user=[{type:"text",text:prompt},{type:"image_url",image_url:{url:state.photo.url}}];
-  const r=await fetch(OR_URL,{method:"POST",headers:orHeaders(),body:JSON.stringify({model:CONFIG.cloudModel,messages:[{role:"system",content:SYSTEM},{role:"user",content:user}]})});
-  if(!r.ok)throw new Error("cloud "+r.status);
-  return orParse(await r.json());
+  return orCall([{role:"system",content:SYSTEM},{role:"user",content:user}]);
 }
 async function apiChat(history){
-  const msgs=[{role:"system",content:SYSTEM}].concat(history.map((m)=>({role:m.role,content:m.content})));
-  const r=await fetch(OR_URL,{method:"POST",headers:orHeaders(),body:JSON.stringify({model:CONFIG.cloudModel,messages:msgs})});
-  if(!r.ok)throw new Error("cloud "+r.status);
-  return orParse(await r.json());
+  return orCall([{role:"system",content:SYSTEM}].concat(history.map((m)=>({role:m.role,content:m.content}))));
 }
 /* запасной онлайн-канал (работает в т.ч. в песочнице предпросмотра) */
 const ANTH_URL="https://api.anthropic.com/v1/messages";
